@@ -2,7 +2,6 @@ import math
 from fastapi.responses import JSONResponse
 from src.db.db import MySQLDatabase
 from src.models.notification import Notification, CreateNotification, UpdateNotification
-from src.models.paginate_model import PaginateModel
 
 
 class NotificationRepository:
@@ -65,18 +64,19 @@ class NotificationRepository:
         finally:
             conn.close()
 
-    def get_list_notifications(self, page: int = 1, page_size: int = 10) -> PaginateModel[Notification]:
+    def get_list_notifications(self, page: int = 1, page_size: int = 10) -> dict:
         try:
             conn = self.db.get_connection()
             cur = conn.cursor(as_dict=True)
             cur.execute("""
                 SELECT * FROM dbo.notifications
-                LIMIT %s OFFSET %s
-            """, (page_size, (page - 1) * page_size))
+                ORDER BY id DESC
+                OFFSET %s ROWS FETCH NEXT %s ROWS ONLY
+            """, ((page - 1) * page_size, page_size))
             rows = cur.fetchall()
             total = cur.rowcount
             total_pages = math.ceil(total / page_size)
-            return PaginateModel[Notification](page=page, page_size=page_size, total=total, total_pages=total_pages, data=[Notification(**row) for row in rows])
+            return {"page": page, "page_size": page_size, "total": total, "total_pages": total_pages, "data": [Notification(**row) for row in rows]}
         except Exception as e:
             return JSONResponse({"error": str(e)}, status_code=500)
         finally:

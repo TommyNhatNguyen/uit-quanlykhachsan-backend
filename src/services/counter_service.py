@@ -1,7 +1,6 @@
 from fastapi import HTTPException
 from fastapi.responses import JSONResponse
 from src.models.counter import Counter, CreateCounter, UpdateCounter
-from src.models.paginate_model import PaginateModel
 from src.repositories.counter_repo import CounterRepository
 
 
@@ -15,7 +14,7 @@ class CounterService:
             raise HTTPException(status_code=404, detail=f"Counter '{name}' not found")
         return result
 
-    def get_list_counters(self, page: int = 1, page_size: int = 10) -> PaginateModel[Counter]:
+    def get_list_counters(self, page: int = 1, page_size: int = 10) -> dict:
         return self.repo.get_list_counters(page, page_size)
 
     def create_counter(self, counter: CreateCounter) -> Counter:

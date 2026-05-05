@@ -1,7 +1,6 @@
 from fastapi import HTTPException
 from fastapi.responses import JSONResponse
 from src.models.service_item import ServiceItem, CreateServiceItem, UpdateServiceItem
-from src.models.paginate_model import PaginateModel
 from src.repositories.service_item_repo import ServiceItemRepository
 
 
@@ -15,7 +14,7 @@ class ServiceItemService:
             raise HTTPException(status_code=404, detail=f"ServiceItem {service_item_id} not found")
         return result
 
-    def get_list_service_items(self, page: int = 1, page_size: int = 10) -> PaginateModel[ServiceItem]:
+    def get_list_service_items(self, page: int = 1, page_size: int = 10) -> dict:
         return self.repo.get_list_service_items(page, page_size)
 
     def create_service_item(self, service_item: CreateServiceItem) -> ServiceItem:

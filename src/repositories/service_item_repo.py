@@ -2,7 +2,6 @@ import math
 from fastapi.responses import JSONResponse
 from src.db.db import MySQLDatabase
 from src.models.service_item import ServiceItem, CreateServiceItem, UpdateServiceItem
-from src.models.paginate_model import PaginateModel
 
 
 class ServiceItemRepository:
@@ -65,18 +64,19 @@ class ServiceItemRepository:
         finally:
             conn.close()
 
-    def get_list_service_items(self, page: int = 1, page_size: int = 10) -> PaginateModel[ServiceItem]:
+    def get_list_service_items(self, page: int = 1, page_size: int = 10) -> dict:
         try:
             conn = self.db.get_connection()
             cur = conn.cursor(as_dict=True)
             cur.execute("""
                 SELECT * FROM dbo.service_item
-                LIMIT %s OFFSET %s
-            """, (page_size, (page - 1) * page_size))
+                ORDER BY service_item_id
+                OFFSET %s ROWS FETCH NEXT %s ROWS ONLY
+            """, ((page - 1) * page_size, page_size))
             rows = cur.fetchall()
             total = cur.rowcount
             total_pages = math.ceil(total / page_size)
-            return PaginateModel[ServiceItem](page=page, page_size=page_size, total=total, total_pages=total_pages, data=[ServiceItem(**row) for row in rows])
+            return {"page": page, "page_size": page_size, "total": total, "total_pages": total_pages, "data": [ServiceItem(**row) for row in rows]}
         except Exception as e:
             return JSONResponse({"error": str(e)}, status_code=500)
         finally:

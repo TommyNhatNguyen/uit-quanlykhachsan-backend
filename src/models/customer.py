@@ -24,3 +24,13 @@ class CreateCustomer(BaseModel):
     birthday: Optional[date] = None
     membership_type_id: Optional[int] = None
     total_paid: Optional[float] = None
+
+class UpdateCustomer(BaseModel):
+    customer_id: Optional[int] = None
+    customer_name: Optional[str] = None
+    sex: Optional[str] = None
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    birthday: Optional[date] = None
+    membership_type_id: Optional[int] = None
+    total_paid: Optional[float] = None

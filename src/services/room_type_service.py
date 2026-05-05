@@ -1,7 +1,6 @@
 from fastapi import HTTPException
 from fastapi.responses import JSONResponse
 from src.models.room_type import RoomType, CreateRoomType, UpdateRoomType
-from src.models.paginate_model import PaginateModel
 from src.repositories.room_type_repo import RoomTypeRepository
 
 
@@ -15,7 +14,7 @@ class RoomTypeService:
             raise HTTPException(status_code=404, detail=f"RoomType {room_type_id} not found")
         return result
 
-    def get_list_room_types(self, page: int = 1, page_size: int = 10) -> PaginateModel[RoomType]:
+    def get_list_room_types(self, page: int = 1, page_size: int = 10) -> dict:
         return self.repo.get_list_room_types(page, page_size)
 
     def create_room_type(self, room_type: CreateRoomType) -> RoomType:

@@ -1,7 +1,6 @@
 from fastapi import HTTPException
 from fastapi.responses import JSONResponse
 from src.models.room_inventory import RoomInventory, CreateRoomInventory, UpdateRoomInventory
-from src.models.paginate_model import PaginateModel
 from src.repositories.room_inventory_repo import RoomInventoryRepository
 
 
@@ -15,7 +14,7 @@ class RoomInventoryService:
             raise HTTPException(status_code=404, detail=f"RoomInventory for room {room_id} not found")
         return result
 
-    def get_list_room_inventories(self, page: int = 1, page_size: int = 10) -> PaginateModel[RoomInventory]:
+    def get_list_room_inventories(self, page: int = 1, page_size: int = 10) -> dict:
         return self.repo.get_list_room_inventories(page, page_size)
 
     def create_room_inventory(self, room_inventory: CreateRoomInventory) -> RoomInventory:

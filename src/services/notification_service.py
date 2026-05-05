@@ -1,7 +1,6 @@
 from fastapi import HTTPException
 from fastapi.responses import JSONResponse
 from src.models.notification import Notification, CreateNotification, UpdateNotification
-from src.models.paginate_model import PaginateModel
 from src.repositories.notification_repo import NotificationRepository
 
 
@@ -15,7 +14,7 @@ class NotificationService:
             raise HTTPException(status_code=404, detail=f"Notification {id} not found")
         return result
 
-    def get_list_notifications(self, page: int = 1, page_size: int = 10) -> PaginateModel[Notification]:
+    def get_list_notifications(self, page: int = 1, page_size: int = 10) -> dict:
         return self.repo.get_list_notifications(page, page_size)
 
     def create_notification(self, notification: CreateNotification) -> Notification:

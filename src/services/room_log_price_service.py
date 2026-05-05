@@ -1,7 +1,6 @@
 from fastapi import HTTPException
 from fastapi.responses import JSONResponse
 from src.models.room_log_price import RoomLogPrice, CreateRoomLogPrice, UpdateRoomLogPrice
-from src.models.paginate_model import PaginateModel
 from src.repositories.room_log_price_repo import RoomLogPriceRepository
 
 
@@ -15,7 +14,7 @@ class RoomLogPriceService:
             raise HTTPException(status_code=404, detail=f"RoomLogPrice {id} not found")
         return result
 
-    def get_list_room_log_prices(self, page: int = 1, page_size: int = 10) -> PaginateModel[RoomLogPrice]:
+    def get_list_room_log_prices(self, page: int = 1, page_size: int = 10) -> dict:
         return self.repo.get_list_room_log_prices(page, page_size)
 
     def create_room_log_price(self, log: CreateRoomLogPrice) -> RoomLogPrice:

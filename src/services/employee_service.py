@@ -1,7 +1,6 @@
 from fastapi import HTTPException
 from fastapi.responses import JSONResponse
 from src.models.employee import Employee, CreateEmployee, UpdateEmployee
-from src.models.paginate_model import PaginateModel
 from src.repositories.employee_repo import EmployeeRepository
 
 
@@ -15,7 +14,7 @@ class EmployeeService:
             raise HTTPException(status_code=404, detail=f"Employee {employee_id} not found")
         return result
 
-    def get_list_employees(self, page: int = 1, page_size: int = 10) -> PaginateModel[Employee]:
+    def get_list_employees(self, page: int = 1, page_size: int = 10) -> dict:
         return self.repo.get_list_employees(page, page_size)
 
     def create_employee(self, employee: CreateEmployee) -> Employee:

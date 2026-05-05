@@ -1,0 +1,964 @@
+{
+  "info": {
+    "_postman_id": "hotel-booking-api-collection",
+    "name": "Hotel Booking API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [{ "key": "baseUrl", "value": "http://localhost:5001" }],
+  "item": [
+    {
+      "name": "State",
+      "item": [
+        {
+          "name": "Get State",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/state" }
+        },
+        {
+          "name": "Reset State",
+          "request": { "method": "POST", "url": "{{baseUrl}}/api/state/reset" }
+        }
+      ]
+    },
+    {
+      "name": "Bookings",
+      "item": [
+        {
+          "name": "List Bookings",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/bookings?page=1&page_size=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "bookings"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "page_size", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Booking",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/bookings/1" }
+        },
+        {
+          "name": "Create Booking",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/bookings",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"booking_id\": 1,\n  \"customer_id\": 1,\n  \"checkin_datetime\": \"2024-01-01T14:00:00\",\n  \"checkout_datetime\": \"2024-01-05T11:00:00\",\n  \"status\": \"pending\",\n  \"payment_id\": 1,\n  \"hotel_id\": 1,\n  \"created_at\": \"2024-01-01T10:00:00\",\n  \"notes\": \"Special request\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Booking",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/bookings/1",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"confirmed\",\n  \"notes\": \"Updated notes\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Booking",
+          "request": { "method": "DELETE", "url": "{{baseUrl}}/api/bookings/1" }
+        }
+      ]
+    },
+    {
+      "name": "Booking Details",
+      "item": [
+        {
+          "name": "List Booking Details",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/booking-details?page=1&page_size=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "booking-details"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "page_size", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Booking Detail",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/booking-details/1"
+          }
+        },
+        {
+          "name": "Create Booking Detail",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/booking-details",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"booking_detail_id\": 1,\n  \"booking_id\": 1,\n  \"room_id\": 101,\n  \"quantity\": 4,\n  \"price\": 500000,\n  \"amount\": 2000000\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Booking Detail",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/booking-details/1",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quantity\": 3,\n  \"amount\": 1500000\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Booking Detail",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/booking-details/1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Counters",
+      "item": [
+        {
+          "name": "List Counters",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/counters?page=1&page_size=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "counters"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "page_size", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Counter",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/counters/booking"
+          }
+        },
+        {
+          "name": "Create Counter",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/counters",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"booking\",\n  \"value\": 0\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Counter",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/counters/booking",
+            "body": { "mode": "raw", "raw": "{\n  \"value\": 100\n}" }
+          }
+        },
+        {
+          "name": "Delete Counter",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/counters/booking"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Customers",
+      "item": [
+        {
+          "name": "List Customers",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/customers?page=1&page_size=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "customers"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "page_size", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Customer",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/customers/1" }
+        },
+        {
+          "name": "Create Customer",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/customers",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customer_id\": 1,\n  \"customer_name\": \"Nguyen Van A\",\n  \"sex\": \"Nam\",\n  \"phone\": \"0901234567\",\n  \"email\": \"nguyenvana@gmail.com\",\n  \"birthday\": \"1990-01-01\",\n  \"membership_type_id\": 1,\n  \"total_paid\": 0\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Customer",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/customers/1",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customer_name\": \"Nguyen Van B\",\n  \"phone\": \"0909999999\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Customer",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/customers/1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Customer History Purchases",
+      "item": [
+        {
+          "name": "List Customer History Purchases",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/customer-history-purchases?page=1&page_size=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "customer-history-purchases"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "page_size", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Customer History Purchase",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/customer-history-purchases/1"
+          }
+        },
+        {
+          "name": "Create Customer History Purchase",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/customer-history-purchases",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": 1,\n  \"customer_id\": 1,\n  \"booking_id\": 1,\n  \"booking_paid\": 2000000,\n  \"cumulative_paid\": 2000000\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Customer History Purchase",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/customer-history-purchases/1",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cumulative_paid\": 4000000\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Customer History Purchase",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/customer-history-purchases/1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Employees",
+      "item": [
+        {
+          "name": "List Employees",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/employees?page=1&page_size=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "employees"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "page_size", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Employee",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/employees/1" }
+        },
+        {
+          "name": "Create Employee",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/employees",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employee_id\": 1,\n  \"employee_name\": \"Tran Thi B\",\n  \"birthday\": \"1995-05-15\",\n  \"phone\": \"0987654321\",\n  \"is_working\": \"true\",\n  \"position\": \"Receptionist\",\n  \"start_working_date\": \"2020-01-01\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Employee",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/employees/1",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"position\": \"Manager\",\n  \"is_working\": \"true\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Employee",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/employees/1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Membership Types",
+      "item": [
+        {
+          "name": "List Membership Types",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/membership-types?page=1&page_size=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "membership-types"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "page_size", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Membership Type",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/membership-types/1"
+          }
+        },
+        {
+          "name": "Create Membership Type",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/membership-types",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"membership_type_id\": 1,\n  \"membership_type_name\": \"Silver\",\n  \"paid_from\": 0,\n  \"paid_to\": 20000000\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Membership Type",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/membership-types/1",
+            "body": { "mode": "raw", "raw": "{\n  \"paid_to\": 25000000\n}" }
+          }
+        },
+        {
+          "name": "Delete Membership Type",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/membership-types/1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        {
+          "name": "List Notifications",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications?page=1&page_size=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "notifications"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "page_size", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Notification",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/notifications/1"
+          }
+        },
+        {
+          "name": "Create Notification",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/notifications",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": 1,\n  \"title\": \"New Booking\",\n  \"sub\": \"Room 101 has been booked\",\n  \"time_str\": \"2024-01-01 10:00\",\n  \"unread\": true,\n  \"icon\": \"🔔\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Notification",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/notifications/1",
+            "body": { "mode": "raw", "raw": "{\n  \"unread\": false\n}" }
+          }
+        },
+        {
+          "name": "Delete Notification",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/notifications/1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Payments",
+      "item": [
+        {
+          "name": "List Payments",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/payments?page=1&page_size=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "payments"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "page_size", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Payment",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/payments/1" }
+        },
+        {
+          "name": "Create Payment",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/payments",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"payment_id\": 1,\n  \"status\": \"unpaid\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Payment",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/payments/1",
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"paid\"\n}" }
+          }
+        },
+        {
+          "name": "Delete Payment",
+          "request": { "method": "DELETE", "url": "{{baseUrl}}/api/payments/1" }
+        }
+      ]
+    },
+    {
+      "name": "Payment Details",
+      "item": [
+        {
+          "name": "List Payment Details",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/payment-details?page=1&page_size=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "payment-details"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "page_size", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Payment Detail",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/payment-details/1"
+          }
+        },
+        {
+          "name": "Create Payment Detail",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/payment-details",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"payment_detail_id\": 1,\n  \"cashier_id\": 1,\n  \"payment_id\": 1,\n  \"total_payment\": 2000000,\n  \"payment_method\": \"cash\",\n  \"payment_datetime\": \"2024-01-05T11:00:00\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Payment Detail",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/payment-details/1",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"payment_method\": \"card\",\n  \"total_payment\": 2000000\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Payment Detail",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/payment-details/1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Rooms",
+      "item": [
+        {
+          "name": "List Rooms",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/rooms?page=1&page_size=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "rooms"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "page_size", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Room",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/rooms/101" }
+        },
+        {
+          "name": "Create Room",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/rooms",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"room_id\": 101,\n  \"room_number\": \"101\",\n  \"room_type_id\": 1,\n  \"price_per_night\": 500000,\n  \"capacity\": \"2 kh\\u00e1ch\",\n  \"room_area\": \"25m2\",\n  \"is_smoking\": false,\n  \"description\": \"Standard room with city view\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Room",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/rooms/101",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"price_per_night\": 600000,\n  \"description\": \"Renovated room\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Room",
+          "request": { "method": "DELETE", "url": "{{baseUrl}}/api/rooms/101" }
+        }
+      ]
+    },
+    {
+      "name": "Room Inventories",
+      "item": [
+        {
+          "name": "List Room Inventories",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/room-inventories?page=1&page_size=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "room-inventories"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "page_size", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Room Inventory",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/room-inventories/101"
+          }
+        },
+        {
+          "name": "Create Room Inventory",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/room-inventories",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"room_id\": 101,\n  \"room_number\": \"101\",\n  \"room_type_id\": 1,\n  \"is_available\": 1.0,\n  \"updated_at\": \"2024-01-01T10:00:00\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Room Inventory",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/room-inventories/101",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"is_available\": 0.0,\n  \"updated_at\": \"2024-01-02T10:00:00\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Room Inventory",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/room-inventories/101"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Room Inventory Logs",
+      "item": [
+        {
+          "name": "List Room Inventory Logs",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/room-inventory-logs?page=1&page_size=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "room-inventory-logs"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "page_size", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Room Inventory Log",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/room-inventory-logs/1"
+          }
+        },
+        {
+          "name": "Create Room Inventory Log",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/room-inventory-logs",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": 1,\n  \"room_id\": 101,\n  \"room_number\": \"101\",\n  \"room_type_id\": 1,\n  \"is_available\": 1.0,\n  \"created_at\": \"2024-01-01T10:00:00\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Room Inventory Log",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/room-inventory-logs/1",
+            "body": { "mode": "raw", "raw": "{\n  \"is_available\": 0.0\n}" }
+          }
+        },
+        {
+          "name": "Delete Room Inventory Log",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/room-inventory-logs/1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Room Log Prices",
+      "item": [
+        {
+          "name": "List Room Log Prices",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/room-log-prices?page=1&page_size=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "room-log-prices"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "page_size", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Room Log Price",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/room-log-prices/1"
+          }
+        },
+        {
+          "name": "Create Room Log Price",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/room-log-prices",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": 1,\n  \"room_id\": 101,\n  \"using_form_datetime\": \"2024-01-01T00:00:00\",\n  \"using_to_datetime\": \"2024-03-31T23:59:59\",\n  \"price_per_night\": 500000\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Room Log Price",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/room-log-prices/1",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"price_per_night\": 600000\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Room Log Price",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/room-log-prices/1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Room Types",
+      "item": [
+        {
+          "name": "List Room Types",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/room-types?page=1&page_size=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "room-types"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "page_size", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Room Type",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/room-types/1" }
+        },
+        {
+          "name": "Create Room Type",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/room-types",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"room_type_id\": 5,\n  \"room_type_name\": \"Penthouse\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Room Type",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/room-types/1",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"room_type_name\": \"Standard Plus\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Room Type",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/room-types/1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Service Details",
+      "item": [
+        {
+          "name": "List Service Details",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/service-details?page=1&page_size=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "service-details"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "page_size", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Service Detail",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/service-details/1"
+          }
+        },
+        {
+          "name": "Create Service Detail",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/service-details",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"service_detail\": 1,\n  \"booking_id\": 1,\n  \"service_item_id\": 1,\n  \"quantity\": 2,\n  \"price\": 50000,\n  \"amount\": 100000\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Service Detail",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/service-details/1",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quantity\": 3,\n  \"amount\": 150000\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Service Detail",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/service-details/1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Service Items",
+      "item": [
+        {
+          "name": "List Service Items",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/service-items?page=1&page_size=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "service-items"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "page_size", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Service Item",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/service-items/1"
+          }
+        },
+        {
+          "name": "Create Service Item",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/service-items",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"service_item_id\": 1,\n  \"service_item_name\": \"Room Service\",\n  \"catalog\": \"Food\",\n  \"price\": 50000,\n  \"used_count\": 0\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Service Item",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/service-items/1",
+            "body": { "mode": "raw", "raw": "{\n  \"price\": 60000\n}" }
+          }
+        },
+        {
+          "name": "Delete Service Item",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/service-items/1"
+          }
+        }
+      ]
+    }
+  ]
+}

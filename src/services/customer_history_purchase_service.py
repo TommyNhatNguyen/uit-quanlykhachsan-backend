@@ -1,7 +1,6 @@
 from fastapi import HTTPException
 from fastapi.responses import JSONResponse
 from src.models.customer_history_purchase import CustomerHistoryPurchase, CreateCustomerHistoryPurchase, UpdateCustomerHistoryPurchase
-from src.models.paginate_model import PaginateModel
 from src.repositories.customer_history_purchase_repo import CustomerHistoryPurchaseRepository
 
 
@@ -15,7 +14,7 @@ class CustomerHistoryPurchaseService:
             raise HTTPException(status_code=404, detail=f"CustomerHistoryPurchase {id} not found")
         return result
 
-    def get_list_customer_history_purchases(self, page: int = 1, page_size: int = 10) -> PaginateModel[CustomerHistoryPurchase]:
+    def get_list_customer_history_purchases(self, page: int = 1, page_size: int = 10) -> dict:
         return self.repo.get_list_customer_history_purchases(page, page_size)
 
     def create_customer_history_purchase(self, chp: CreateCustomerHistoryPurchase) -> CustomerHistoryPurchase:

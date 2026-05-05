@@ -1,7 +1,6 @@
 from fastapi import HTTPException
 from fastapi.responses import JSONResponse
 from src.models.membership_type import MembershipType, CreateMembershipType, UpdateMembershipType
-from src.models.paginate_model import PaginateModel
 from src.repositories.membership_type_repo import MembershipTypeRepository
 
 
@@ -15,7 +14,7 @@ class MembershipTypeService:
             raise HTTPException(status_code=404, detail=f"MembershipType {membership_type_id} not found")
         return result
 
-    def get_list_membership_types(self, page: int = 1, page_size: int = 10) -> PaginateModel[MembershipType]:
+    def get_list_membership_types(self, page: int = 1, page_size: int = 10) -> dict:
         return self.repo.get_list_membership_types(page, page_size)
 
     def create_membership_type(self, membership_type: CreateMembershipType) -> MembershipType:

@@ -1,7 +1,6 @@
 from fastapi import HTTPException
 from fastapi.responses import JSONResponse
 from src.models.payment import Payment, CreatePayment, UpdatePayment
-from src.models.paginate_model import PaginateModel
 from src.repositories.payment_repo import PaymentRepository
 
 
@@ -15,7 +14,7 @@ class PaymentService:
             raise HTTPException(status_code=404, detail=f"Payment {payment_id} not found")
         return result
 
-    def get_list_payments(self, page: int = 1, page_size: int = 10) -> PaginateModel[Payment]:
+    def get_list_payments(self, page: int = 1, page_size: int = 10) -> dict:
         return self.repo.get_list_payments(page, page_size)
 
     def create_payment(self, payment: CreatePayment) -> Payment:

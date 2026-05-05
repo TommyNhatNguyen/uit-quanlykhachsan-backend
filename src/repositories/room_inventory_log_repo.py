@@ -2,7 +2,6 @@ import math
 from fastapi.responses import JSONResponse
 from src.db.db import MySQLDatabase
 from src.models.room_inventory_log import RoomInventoryLog, CreateRoomInventoryLog, UpdateRoomInventoryLog
-from src.models.paginate_model import PaginateModel
 
 
 class RoomInventoryLogRepository:
@@ -65,18 +64,19 @@ class RoomInventoryLogRepository:
         finally:
             conn.close()
 
-    def get_list_room_inventory_logs(self, page: int = 1, page_size: int = 10) -> PaginateModel[RoomInventoryLog]:
+    def get_list_room_inventory_logs(self, page: int = 1, page_size: int = 10) -> dict:
         try:
             conn = self.db.get_connection()
             cur = conn.cursor(as_dict=True)
             cur.execute("""
                 SELECT * FROM dbo.room_inventory_log
-                LIMIT %s OFFSET %s
-            """, (page_size, (page - 1) * page_size))
+                ORDER BY id
+                OFFSET %s ROWS FETCH NEXT %s ROWS ONLY
+            """, ((page - 1) * page_size, page_size))
             rows = cur.fetchall()
             total = cur.rowcount
             total_pages = math.ceil(total / page_size)
-            return PaginateModel[RoomInventoryLog](page=page, page_size=page_size, total=total, total_pages=total_pages, data=[RoomInventoryLog(**row) for row in rows])
+            return {"page": page, "page_size": page_size, "total": total, "total_pages": total_pages, "data": [RoomInventoryLog(**row) for row in rows]}
         except Exception as e:
             return JSONResponse({"error": str(e)}, status_code=500)
         finally:
