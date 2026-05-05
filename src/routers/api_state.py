@@ -6,6 +6,9 @@ import src.helpers as helpers
 import src.constants as constants
 from src.db.db import db
 from src.db.utils import DELETE_ORDER, ensure_extras, ensure_reference_data
+from src.models.customer import CreateCustomer
+from src.repositories.api_state import ApiStateRepository
+from src.services.customer_service import CustomerService
 
 router = APIRouter()
 
@@ -237,6 +240,19 @@ def get_state():
     finally:
         conn.close()
 
+
+@router.get("/api/test")
+async def test():
+    repository = ApiStateRepository(db)
+    service = CustomerService(repo=repository)
+    result = await service.get_customers()
+    return result
+
+@router.post("/api/test")
+async def create_customer(customer: CreateCustomer):
+    service = CustomerService(repo=ApiStateRepository(db))
+    result = await service.create_customer(customer)
+    return result
 
 # ── PUT /api/state ────────────────────────────────────────────────────────────
 
