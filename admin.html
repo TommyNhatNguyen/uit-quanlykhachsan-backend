@@ -1,0 +1,3069 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>HotelBooking Admin — Quản trị dịch vụ khách sạn</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #f7f8fa;
+    --panel: #ffffff;
+    --border: #eceef2;
+    --border-strong: #dcdfe5;
+    --text: #111827;
+    --text-muted: #6b7280;
+    --text-subtle: #9ca3af;
+    --primary: #2563eb;
+    --primary-soft: #eff6ff;
+    --primary-hover: #1d4ed8;
+    --success: #059669;
+    --success-soft: #ecfdf5;
+    --warning: #d97706;
+    --warning-soft: #fffbeb;
+    --danger: #dc2626;
+    --danger-soft: #fef2f2;
+    --purple: #7c3aed;
+    --purple-soft: #f5f3ff;
+    --shadow-sm: 0 1px 2px rgba(16,24,40,.04);
+    --shadow: 0 2px 8px rgba(16,24,40,.06);
+    --shadow-lg: 0 20px 40px rgba(0,0,0,0.12);
+    --radius: 10px;
+    --radius-sm: 8px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin:0; padding:0; height:100%; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg); color: var(--text);
+    font-size: 14px; line-height: 1.5;
+  }
+  a { color: inherit; text-decoration: none; }
+  button { font-family: inherit; cursor: pointer; }
+
+  /* Layout */
+  .app { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+  .sidebar {
+    background: var(--panel); border-right: 1px solid var(--border);
+    padding: 20px 14px; display: flex; flex-direction: column; gap: 4px;
+    position: sticky; top: 0; height: 100vh; overflow-y: auto;
+  }
+  .brand {
+    display:flex; align-items:center; gap:10px;
+    padding: 6px 10px 18px 10px;
+    border-bottom: 1px solid var(--border); margin-bottom: 12px;
+  }
+  .brand-logo {
+    width:32px; height:32px; border-radius:8px;
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
+    display:flex; align-items:center; justify-content:center;
+    color:white; font-weight:700; font-size:16px;
+  }
+  .brand-text { font-weight:600; font-size:15px; }
+  .brand-sub { font-size:11px; color: var(--text-muted); }
+
+  .nav-section-label {
+    font-size: 11px; text-transform: uppercase;
+    letter-spacing: .04em; color: var(--text-subtle);
+    padding: 12px 10px 6px 10px; font-weight: 600;
+  }
+  .nav-item {
+    display:flex; align-items:center; gap:10px;
+    padding: 8px 10px; border-radius: 8px;
+    color: var(--text); cursor: pointer;
+    font-weight: 500; font-size: 13.5px;
+    border: none; background: transparent; width: 100%; text-align: left;
+  }
+  .nav-item:hover { background: #f2f4f7; }
+  .nav-item.active { background: var(--primary-soft); color: var(--primary); }
+  .nav-item .icon { width:18px; height:18px; stroke-width:2; flex-shrink:0; }
+  .nav-item .count {
+    margin-left:auto; font-size:11px; color:var(--text-muted);
+    background: #f2f4f7; padding: 1px 6px; border-radius: 10px;
+  }
+  .nav-item.active .count { background: white; color: var(--primary); }
+
+  /* Main */
+  .main { display:flex; flex-direction:column; min-width:0; }
+  .topbar {
+    height: 56px; background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items:center; gap: 16px; padding: 0 24px;
+    position: sticky; top: 0; z-index: 5;
+  }
+  .topbar .search {
+    flex:1; max-width: 460px; position: relative;
+    display:flex; align-items:center; gap:8px;
+    background:#f4f5f7; border:1px solid transparent;
+    border-radius:8px; padding: 7px 12px;
+  }
+  .topbar .search:focus-within { background: white; border-color: var(--border-strong); }
+  .topbar .search input { border:none; outline:none; background:transparent; flex:1; font-size:13px; }
+  .topbar .actions { display:flex; align-items:center; gap:10px; }
+  .icon-btn {
+    width:34px; height:34px; border-radius:8px; border:1px solid var(--border);
+    background:white; display:flex; align-items:center; justify-content:center;
+    color: var(--text-muted); position: relative;
+  }
+  .icon-btn:hover { background:#f4f5f7; color:var(--text); }
+  .icon-btn .badge-dot {
+    position: absolute; top: 6px; right: 6px;
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--danger); border: 2px solid white;
+  }
+  .avatar {
+    width:32px; height:32px; border-radius:50%;
+    background: linear-gradient(135deg,#f59e0b,#dc2626); color:white;
+    display:flex; align-items:center; justify-content:center;
+    font-weight:600; font-size:12px; cursor: pointer;
+  }
+
+  /* Dropdown menu */
+  .dropdown { position: relative; }
+  .dropdown-menu {
+    position: absolute; top: calc(100% + 6px); right: 0;
+    background: white; border: 1px solid var(--border);
+    border-radius: 10px; box-shadow: var(--shadow-lg);
+    min-width: 220px; padding: 6px; z-index: 40;
+    display: none;
+  }
+  .dropdown-menu.show { display: block; }
+  .dropdown-item {
+    display: flex; align-items: center; gap: 8px;
+    width: 100%; padding: 8px 10px;
+    border: none; background: transparent; border-radius: 6px;
+    font-size: 13px; color: var(--text); text-align: left; cursor: pointer;
+  }
+  .dropdown-item:hover { background: #f4f5f7; }
+  .dropdown-item.danger { color: var(--danger); }
+  .dropdown-item.danger:hover { background: var(--danger-soft); }
+  .dropdown-divider { height: 1px; background: var(--border); margin: 4px 0; }
+  .dropdown-label { font-size: 11px; color: var(--text-muted); padding: 6px 10px 2px; text-transform: uppercase; letter-spacing: .04em; font-weight: 600; }
+
+  /* Search suggestions */
+  .search-results {
+    position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+    background: white; border: 1px solid var(--border);
+    border-radius: 10px; box-shadow: var(--shadow-lg);
+    max-height: 420px; overflow-y: auto; z-index: 30;
+    display: none;
+  }
+  .search-results.show { display: block; }
+  .search-group { padding: 6px 4px; }
+  .search-group-label { font-size: 11px; color: var(--text-muted); padding: 6px 10px; text-transform: uppercase; letter-spacing: .04em; font-weight: 600; }
+  .search-result {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 10px; border-radius: 6px; cursor: pointer;
+  }
+  .search-result:hover { background: #f4f5f7; }
+  .search-result .sr-icon {
+    width: 28px; height: 28px; border-radius: 6px;
+    background: var(--primary-soft); color: var(--primary);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .search-result .sr-title { font-weight: 500; font-size: 13px; }
+  .search-result .sr-sub { font-size: 12px; color: var(--text-muted); }
+  .search-empty { padding: 16px; text-align: center; color: var(--text-muted); font-size: 13px; }
+
+  .content { padding: 24px 28px; max-width: 1400px; width: 100%; }
+  .page-header {
+    display:flex; align-items:flex-end; justify-content:space-between; gap: 16px;
+    margin-bottom: 20px; flex-wrap: wrap;
+  }
+  .page-title { font-size: 22px; font-weight: 700; margin: 0; }
+  .page-sub { color: var(--text-muted); font-size: 13px; margin-top: 4px; }
+  .page-actions { display:flex; gap: 8px; flex-wrap: wrap; }
+
+  .btn {
+    display:inline-flex; align-items:center; gap:6px;
+    padding: 8px 14px; border-radius: 8px; font-weight:500; font-size:13px;
+    border: 1px solid var(--border-strong); background: white; color: var(--text);
+    transition: all .12s;
+  }
+  .btn:hover { background:#f4f5f7; }
+  .btn:disabled { opacity:.5; cursor: not-allowed; }
+  .btn-primary { background: var(--primary); border-color: var(--primary); color:white; }
+  .btn-primary:hover { background: var(--primary-hover); border-color: var(--primary-hover); }
+  .btn-danger { background: var(--danger); border-color: var(--danger); color: white; }
+  .btn-danger:hover { background: #b91c1c; border-color: #b91c1c; }
+  .btn-sm { padding: 5px 10px; font-size: 12px; }
+  .btn-ghost { border-color: transparent; background: transparent; }
+  .btn-ghost:hover { background: #f4f5f7; }
+
+  /* KPI cards */
+  .kpi-grid { display:grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px; }
+  .kpi-card {
+    background: var(--panel); border:1px solid var(--border);
+    border-radius: var(--radius); padding: 16px 18px;
+    box-shadow: var(--shadow-sm);
+  }
+  .kpi-head { display:flex; align-items:center; gap:8px; color: var(--text-muted); font-size:12.5px; font-weight:500; }
+  .kpi-val { font-size: 24px; font-weight: 700; margin-top: 8px; letter-spacing: -0.02em; }
+  .kpi-change { display:inline-flex; align-items:center; gap:3px; font-size: 12px; margin-top: 6px; }
+  .kpi-up { color: var(--success); }
+  .kpi-down { color: var(--danger); }
+
+  /* Generic cards */
+  .card {
+    background: var(--panel); border:1px solid var(--border);
+    border-radius: var(--radius); box-shadow: var(--shadow-sm);
+  }
+  .card-head {
+    display:flex; align-items:center; justify-content:space-between;
+    padding: 14px 18px; border-bottom: 1px solid var(--border);
+  }
+  .card-title { font-weight:600; font-size:14.5px; margin:0; }
+  .card-body { padding: 6px 0; }
+  .two-col { display:grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 20px; }
+
+  /* Tables */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead th {
+    text-align:left; padding: 10px 18px;
+    font-weight:600; font-size:11.5px; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: .03em;
+    background: #fbfbfc; border-bottom: 1px solid var(--border);
+  }
+  tbody td { padding: 11px 18px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: #fafbfc; }
+  td.num { font-variant-numeric: tabular-nums; }
+  td.strong { font-weight: 600; }
+  .empty-row td { text-align: center; color: var(--text-muted); padding: 40px 20px; }
+
+  /* Badges */
+  .badge {
+    display:inline-flex; align-items:center; gap:4px;
+    padding: 2px 8px; border-radius: 20px;
+    font-size: 11.5px; font-weight: 500;
+    background: #f2f4f7; color: var(--text-muted);
+  }
+  .badge.b-primary { background: var(--primary-soft); color: var(--primary); }
+  .badge.b-success { background: var(--success-soft); color: var(--success); }
+  .badge.b-warning { background: var(--warning-soft); color: var(--warning); }
+  .badge.b-danger  { background: var(--danger-soft); color: var(--danger); }
+  .badge.b-purple  { background: var(--purple-soft); color: var(--purple); }
+  .dot { width:6px; height:6px; border-radius:50%; display:inline-block; }
+
+  /* Filters */
+  .filters {
+    display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+    padding: 12px 18px;
+    background: var(--panel); border:1px solid var(--border);
+    border-radius: var(--radius); margin-bottom: 14px;
+  }
+  select, input[type=text], input[type=date], input[type=number], input[type=email], input[type=datetime-local], textarea {
+    padding: 7px 10px; border:1px solid var(--border-strong);
+    border-radius: 7px; font-size: 13px; font-family: inherit; background:white;
+    outline: none;
+  }
+  select:focus, input:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
+  .chip {
+    display:inline-flex; align-items:center; gap:6px;
+    padding: 5px 10px; border-radius: 16px; font-size: 12px;
+    border: 1px solid var(--border-strong); background:white; cursor: pointer;
+    color: var(--text);
+  }
+  .chip.active { background: var(--primary-soft); color: var(--primary); border-color: var(--primary-soft); }
+
+  /* Room grid */
+  .room-grid {
+    display:grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 12px; padding: 16px;
+  }
+  .room-tile {
+    background: white; border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px; cursor: pointer;
+    transition: all .15s;
+  }
+  .room-tile:hover { border-color: var(--border-strong); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+  .room-tile.occupied { background: var(--warning-soft); border-color: #fde68a; }
+  .room-tile.maintenance { background: var(--danger-soft); border-color: #fecaca; }
+  .room-tile.available { background: var(--success-soft); border-color: #a7f3d0; }
+  .room-no { font-size: 18px; font-weight: 700; letter-spacing: -0.01em; }
+  .room-meta { font-size: 11.5px; color: var(--text-muted); margin-top: 4px; }
+  .room-status { font-size: 11.5px; font-weight: 600; margin-top:10px; display:flex; align-items:center; gap:6px; }
+
+  /* Modal */
+  .modal-bg {
+    position:fixed; inset:0; background: rgba(16,24,40,.45);
+    display:none; align-items:center; justify-content:center; z-index: 50;
+    animation: fadeIn .15s ease;
+  }
+  .modal-bg.show { display:flex; }
+  .modal {
+    background: white; border-radius: 12px;
+    width: 640px; max-width: calc(100vw - 40px);
+    max-height: 90vh; overflow:auto;
+    box-shadow: var(--shadow-lg);
+    animation: slideUp .18s ease;
+  }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  .modal.wide { width: 860px; }
+  .modal.narrow { width: 440px; }
+  .modal-head {
+    display:flex; align-items:center; justify-content:space-between;
+    padding: 16px 20px; border-bottom: 1px solid var(--border);
+  }
+  .modal-title { font-weight: 600; font-size: 15px; margin: 0; }
+  .modal-body { padding: 18px 20px; }
+  .modal-foot { display:flex; justify-content:flex-end; gap: 8px; padding: 14px 20px; border-top: 1px solid var(--border); background: #fbfbfc; border-radius: 0 0 12px 12px; }
+  .form-grid { display:grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .form-field { display:flex; flex-direction:column; gap:6px; }
+  .form-field label { font-size: 12.5px; font-weight: 500; color: var(--text-muted); }
+  .form-field.full { grid-column: 1 / -1; }
+  .form-field .err { font-size: 11.5px; color: var(--danger); display: none; }
+  .form-field.invalid .err { display: block; }
+  .form-field.invalid input, .form-field.invalid select, .form-field.invalid textarea { border-color: var(--danger); }
+
+  /* Tabs */
+  .tabs { display:flex; gap:2px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+  .tab {
+    padding: 9px 14px; font-size: 13px; font-weight:500;
+    color: var(--text-muted); cursor: pointer; border: none; background: transparent;
+    border-bottom: 2px solid transparent; margin-bottom: -1px;
+  }
+  .tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+  .tab:hover { color: var(--text); }
+
+  /* Code block */
+  pre {
+    background: #0f172a; color: #e2e8f0;
+    padding: 16px 18px; border-radius: 8px;
+    font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12.5px; line-height: 1.55; overflow-x: auto;
+  }
+  pre .k { color: #f472b6; } pre .s { color: #a7f3d0; }
+  pre .c { color: #94a3b8; font-style: italic; } pre .n { color: #fbbf24; }
+
+  /* Toast */
+  .toast-container {
+    position: fixed; top: 20px; right: 20px; z-index: 100;
+    display: flex; flex-direction: column; gap: 8px;
+    pointer-events: none;
+  }
+  .toast {
+    background: white; border: 1px solid var(--border);
+    border-left: 3px solid var(--primary);
+    padding: 12px 16px; border-radius: 8px; box-shadow: var(--shadow-lg);
+    min-width: 280px; max-width: 380px; pointer-events: auto;
+    display: flex; align-items: flex-start; gap: 10px;
+    animation: toastIn .2s ease;
+    font-size: 13px;
+  }
+  .toast.success { border-left-color: var(--success); }
+  .toast.error { border-left-color: var(--danger); }
+  .toast.warning { border-left-color: var(--warning); }
+  .toast-icon { flex-shrink: 0; width: 18px; height: 18px; margin-top: 1px; }
+  .toast.success .toast-icon { color: var(--success); }
+  .toast.error .toast-icon { color: var(--danger); }
+  .toast.warning .toast-icon { color: var(--warning); }
+  .toast-title { font-weight: 600; }
+  .toast-msg { color: var(--text-muted); font-size: 12.5px; margin-top: 2px; }
+  .toast-close {
+    margin-left: auto; background: none; border: none;
+    color: var(--text-muted); cursor: pointer; padding: 2px;
+  }
+  @keyframes toastIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: none; } }
+
+  /* Detail rows */
+  .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 20px; }
+  .detail-row { display: flex; flex-direction: column; padding: 6px 0; border-bottom: 1px dashed var(--border); }
+  .detail-row label { font-size: 11.5px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .03em; font-weight: 500; }
+  .detail-row .v { font-size: 14px; font-weight: 500; margin-top: 2px; }
+
+  /* Notification panel */
+  .notif-list { max-height: 360px; overflow-y: auto; }
+  .notif-item {
+    padding: 10px 12px; border-radius: 6px; display: flex; gap: 10px; align-items: flex-start;
+    cursor: pointer;
+  }
+  .notif-item:hover { background: #f4f5f7; }
+  .notif-item.unread { background: var(--primary-soft); }
+  .notif-icon { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--primary); background: white; flex-shrink: 0; border: 1px solid var(--border); }
+  .notif-title { font-weight: 500; font-size: 13px; }
+  .notif-sub { font-size: 12px; color: var(--text-muted); }
+
+  /* Page visibility */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* Utilities */
+  .row { display:flex; align-items:center; gap:10px; }
+  .muted { color: var(--text-muted); }
+  .right { text-align: right; }
+  .nowrap { white-space: nowrap; }
+  .small { font-size: 12px; }
+  .hidden { display: none !important; }
+
+  @media (max-width: 900px) {
+    .app { grid-template-columns: 64px 1fr; }
+    .brand-text, .brand-sub, .nav-section-label, .nav-item span, .nav-item .count { display:none; }
+    .nav-item { justify-content:center; }
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    .two-col { grid-template-columns: 1fr; }
+    .form-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-logo">H</div>
+      <div>
+        <div class="brand-text">HotelBooking</div>
+        <div class="brand-sub">Admin Console</div>
+      </div>
+    </div>
+
+    <div class="nav-section-label">Tổng quan</div>
+    <button class="nav-item active" data-page="dashboard">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+      <span>Dashboard</span>
+    </button>
+
+    <div class="nav-section-label">Vận hành</div>
+    <button class="nav-item" data-page="bookings">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      <span>Đặt phòng</span>
+      <span class="count" id="navBookingCount">0</span>
+    </button>
+    <button class="nav-item" data-page="rooms">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-6 9 6v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span>Phòng</span>
+      <span class="count" id="navRoomCount">0</span>
+    </button>
+    <button class="nav-item" data-page="customers">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+      <span>Khách hàng</span>
+      <span class="count" id="navCustomerCount">0</span>
+    </button>
+    <button class="nav-item" data-page="services">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      <span>Dịch vụ</span>
+      <span class="count" id="navServiceCount">0</span>
+    </button>
+
+    <div class="nav-section-label">Tài chính</div>
+    <button class="nav-item" data-page="payments">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+      <span>Thanh toán</span>
+    </button>
+    <button class="nav-item" data-page="reports">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-5"/></svg>
+      <span>Báo cáo</span>
+    </button>
+
+    <div class="nav-section-label">Hệ thống</div>
+    <button class="nav-item" data-page="employees">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 11h-6M22 15h-6"/></svg>
+      <span>Nhân viên</span>
+    </button>
+    <button class="nav-item" data-page="integration">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+      <span>Kết nối DB</span>
+    </button>
+
+    <div style="flex:1"></div>
+    <button class="nav-item" id="btnResetData" title="Khôi phục dữ liệu mẫu">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+      <span>Reset dữ liệu</span>
+    </button>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="topbar">
+      <div class="search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="globalSearch" placeholder="Tìm kiếm booking, khách hàng, phòng…" autocomplete="off" />
+        <div class="search-results" id="searchResults"></div>
+      </div>
+      <div style="flex:1"></div>
+      <div class="actions">
+        <div class="dropdown">
+          <button class="icon-btn" id="btnNotifs" title="Thông báo">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+            <span class="badge-dot" id="notifDot"></span>
+          </button>
+          <div class="dropdown-menu" id="notifMenu" style="width: 340px; padding: 8px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; padding: 4px 8px 8px">
+              <strong style="font-size:13px">Thông báo</strong>
+              <button class="btn btn-sm btn-ghost" id="btnMarkAllRead">Đánh dấu đã đọc</button>
+            </div>
+            <div class="notif-list" id="notifList"></div>
+          </div>
+        </div>
+        <button class="icon-btn" id="btnSettings" title="Cài đặt">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        </button>
+        <div class="dropdown">
+          <div class="avatar" id="btnUser" title="LuongCuong">LC</div>
+          <div class="dropdown-menu" id="userMenu">
+            <div class="dropdown-label">Tài khoản</div>
+            <button class="dropdown-item"><span>👤</span> LuongCuong</button>
+            <button class="dropdown-item"><span>✉️</span> cuongquocluong@gmail.com</button>
+            <div class="dropdown-divider"></div>
+            <button class="dropdown-item" data-action="open-settings"><span>⚙️</span> Cài đặt hệ thống</button>
+            <button class="dropdown-item" data-action="export-all"><span>⬇️</span> Xuất toàn bộ dữ liệu</button>
+            <div class="dropdown-divider"></div>
+            <button class="dropdown-item danger" id="btnResetData2"><span>🔄</span> Khôi phục dữ liệu mẫu</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- ========== DASHBOARD ========== -->
+      <section class="page active" id="page-dashboard">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Dashboard</h1>
+            <div class="page-sub" id="dashSubtitle">Tổng quan hoạt động — cập nhật lúc --:--</div>
+          </div>
+          <div class="page-actions">
+            <button class="btn" id="btnDashRefresh">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+              Làm mới
+            </button>
+            <button class="btn" id="btnDashExport">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Xuất báo cáo
+            </button>
+          </div>
+        </div>
+
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-head">📅 Booking hôm nay</div>
+            <div class="kpi-val" id="kpiBookingsToday">—</div>
+            <div class="kpi-change kpi-up" id="kpiBookingsTodayChg">—</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-head">💰 Doanh thu hôm nay</div>
+            <div class="kpi-val" id="kpiRevenueToday">—</div>
+            <div class="kpi-change kpi-up">▲ 8.4% WoW</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-head">🏨 Tỷ lệ lấp đầy</div>
+            <div class="kpi-val" id="kpiOccupancy">—</div>
+            <div class="kpi-change" id="kpiOccupancyChg">—</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-head">👥 Khách hàng</div>
+            <div class="kpi-val" id="kpiCustomers">—</div>
+            <div class="kpi-change kpi-up" id="kpiCustomersChg">—</div>
+          </div>
+        </div>
+
+        <div class="two-col">
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <h3 class="card-title">Doanh thu 7 ngày qua</h3>
+                <div class="small muted" style="margin-top:2px">Tổng: <strong id="revenueSum" style="color:var(--text)">—</strong></div>
+              </div>
+              <div class="row" id="revenuePeriod">
+                <button class="chip active" data-period="7">7 ngày</button>
+                <button class="chip" data-period="30">30 ngày</button>
+                <button class="chip" data-period="90">90 ngày</button>
+              </div>
+            </div>
+            <div class="card-body" style="padding: 16px 18px; height:300px">
+              <canvas id="revenueChart"></canvas>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <h3 class="card-title">Phân bố loại phòng</h3>
+            </div>
+            <div class="card-body" style="padding: 16px 18px; height:300px">
+              <canvas id="roomTypeChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="two-col" style="grid-template-columns: 1fr 1fr;">
+          <div class="card">
+            <div class="card-head">
+              <h3 class="card-title">Booking gần đây</h3>
+              <button class="btn btn-sm btn-ghost" data-nav="bookings">Xem tất cả →</button>
+            </div>
+            <table>
+              <thead><tr><th>Mã</th><th>Khách</th><th>Phòng</th><th>Trạng thái</th><th class="right">Tiền</th></tr></thead>
+              <tbody id="recentBookings"></tbody>
+            </table>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <h3 class="card-title">Top khách hàng theo chi tiêu</h3>
+              <button class="btn btn-sm btn-ghost" data-nav="customers">Xem tất cả →</button>
+            </div>
+            <table>
+              <thead><tr><th>Khách hàng</th><th>Hạng</th><th class="right">Chi tiêu</th></tr></thead>
+              <tbody id="topCustomers"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========== BOOKINGS ========== -->
+      <section class="page" id="page-bookings">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Quản lý đặt phòng</h1>
+            <div class="page-sub">Tất cả booking trong hệ thống — lọc, tìm kiếm, tạo mới và cập nhật trạng thái</div>
+          </div>
+          <div class="page-actions">
+            <button class="btn" id="btnExportBookings">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Xuất CSV
+            </button>
+            <button class="btn btn-primary" data-action="new-booking">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Booking mới
+            </button>
+          </div>
+        </div>
+
+        <div class="filters">
+          <div class="row" id="bookingStatusFilters"></div>
+          <div style="flex:1"></div>
+          <input type="text" id="bookingSearch" placeholder="Tìm mã, khách hàng…" style="width:200px" />
+          <input type="date" id="bookingDateFilter" />
+          <button class="btn btn-sm btn-ghost" id="btnClearBookingFilters">Xoá lọc</button>
+        </div>
+
+        <div class="card">
+          <table>
+            <thead>
+              <tr>
+                <th>Mã booking</th>
+                <th>Khách hàng</th>
+                <th>Check-in</th>
+                <th>Check-out</th>
+                <th>Phòng</th>
+                <th>Trạng thái</th>
+                <th>Thanh toán</th>
+                <th class="right">Tổng tiền</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="bookingsTbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ========== ROOMS ========== -->
+      <section class="page" id="page-rooms">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Quản lý phòng</h1>
+            <div class="page-sub">Tình trạng phòng hiện tại, đơn giá, và lịch sử biến động giá</div>
+          </div>
+          <div class="page-actions">
+            <button class="btn" data-tab-go="room-price-tab">Lịch sử giá phòng</button>
+            <button class="btn btn-primary" data-action="new-room">+ Thêm phòng</button>
+          </div>
+        </div>
+
+        <div class="tabs" data-tabs-group="rooms">
+          <button class="tab active" data-tab="room-grid-tab">Lưới phòng</button>
+          <button class="tab" data-tab="room-list-tab">Danh sách chi tiết</button>
+          <button class="tab" data-tab="room-price-tab">Bảng giá</button>
+        </div>
+
+        <div id="room-grid-tab" class="tab-pane">
+          <div class="filters">
+            <div class="row" id="roomStatusFilters"></div>
+            <div style="flex:1"></div>
+            <select id="roomTypeFilter">
+              <option value="all">Tất cả loại phòng</option>
+              <option value="Standard">Standard</option>
+              <option value="Deluxe">Deluxe</option>
+              <option value="Suite">Suite</option>
+              <option value="Family">Family</option>
+            </select>
+          </div>
+
+          <div class="card">
+            <div class="room-grid" id="roomGrid"></div>
+          </div>
+        </div>
+
+        <div id="room-list-tab" class="tab-pane" style="display:none">
+          <div class="card">
+            <table>
+              <thead>
+                <tr>
+                  <th>Số phòng</th><th>Loại</th><th>Sức chứa</th><th>Diện tích</th>
+                  <th>Hút thuốc</th><th class="right">Giá/đêm</th><th>Trạng thái</th><th></th>
+                </tr>
+              </thead>
+              <tbody id="roomListTbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div id="room-price-tab" class="tab-pane" style="display:none">
+          <div class="card">
+            <div class="card-head">
+              <h3 class="card-title">Lịch sử biến động giá (room_log_price)</h3>
+              <button class="btn btn-sm btn-primary" data-action="new-price">+ Áp giá mới</button>
+            </div>
+            <table>
+              <thead>
+                <tr><th>ID</th><th>Phòng</th><th>Áp dụng từ</th><th>Áp dụng đến</th><th class="right">Giá/đêm</th></tr>
+              </thead>
+              <tbody id="priceLogTbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========== CUSTOMERS ========== -->
+      <section class="page" id="page-customers">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Khách hàng</h1>
+            <div class="page-sub">Danh sách khách hàng, hạng thành viên và lịch sử giao dịch</div>
+          </div>
+          <div class="page-actions">
+            <button class="btn" id="btnExportCustomers">Xuất CSV</button>
+            <button class="btn btn-primary" data-action="new-customer">+ Thêm khách hàng</button>
+          </div>
+        </div>
+
+        <div class="kpi-grid">
+          <div class="kpi-card"><div class="kpi-head">Tổng khách hàng</div><div class="kpi-val" id="kpiCustTotal">0</div><div class="small muted">Trong toàn hệ thống</div></div>
+          <div class="kpi-card"><div class="kpi-head">Diamond</div><div class="kpi-val" id="kpiCustDiamond">0</div><div class="small muted">Chi tiêu ≥ 50M</div></div>
+          <div class="kpi-card"><div class="kpi-head">Gold</div><div class="kpi-val" id="kpiCustGold">0</div><div class="small muted">20–50M</div></div>
+          <div class="kpi-card"><div class="kpi-head">Silver</div><div class="kpi-val" id="kpiCustSilver">0</div><div class="small muted">&lt; 20M</div></div>
+        </div>
+
+        <div class="filters">
+          <input type="text" id="customerSearch" placeholder="Tìm theo tên, SĐT, email…" style="flex:1; max-width:320px" />
+          <select id="customerTierFilter">
+            <option value="all">Tất cả hạng</option>
+            <option value="Diamond">Diamond</option>
+            <option value="Gold">Gold</option>
+            <option value="Silver">Silver</option>
+          </select>
+          <select id="customerSort">
+            <option value="new">Mới → Cũ</option>
+            <option value="old">Cũ → Mới</option>
+            <option value="top">Chi tiêu cao nhất</option>
+          </select>
+        </div>
+
+        <div class="card">
+          <table>
+            <thead>
+              <tr>
+                <th>Khách hàng</th><th>Giới tính</th><th>SĐT</th><th>Email</th>
+                <th>Ngày sinh</th><th>Hạng</th><th class="right">Tổng chi tiêu</th><th></th>
+              </tr>
+            </thead>
+            <tbody id="customersTbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ========== SERVICES ========== -->
+      <section class="page" id="page-services">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Dịch vụ bổ sung</h1>
+            <div class="page-sub">Các dịch vụ khách có thể đặt thêm (spa, ăn uống, giặt là, đưa đón…)</div>
+          </div>
+          <div class="page-actions">
+            <button class="btn btn-primary" data-action="new-service">+ Thêm dịch vụ</button>
+          </div>
+        </div>
+
+        <div class="filters">
+          <div class="row" id="serviceCatFilters"></div>
+        </div>
+
+        <div class="card">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th><th>Tên dịch vụ</th><th>Danh mục</th>
+                <th class="right">Đơn giá</th><th class="right">Lượt dùng (30d)</th><th></th>
+              </tr>
+            </thead>
+            <tbody id="servicesTbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ========== PAYMENTS ========== -->
+      <section class="page" id="page-payments">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Thanh toán</h1>
+            <div class="page-sub">Lịch sử giao dịch, phương thức và thu ngân</div>
+          </div>
+          <div class="page-actions">
+            <button class="btn" id="btnExportPayments">Xuất CSV</button>
+            <button class="btn btn-primary" data-action="new-payment">+ Ghi nhận thanh toán</button>
+          </div>
+        </div>
+
+        <div class="kpi-grid">
+          <div class="kpi-card"><div class="kpi-head">Thu hôm nay</div><div class="kpi-val" id="payKpiToday">—</div><div class="small kpi-up">▲ 8.4%</div></div>
+          <div class="kpi-card"><div class="kpi-head">Tiền mặt</div><div class="kpi-val" id="payKpiCash">—</div><div class="small muted" id="payKpiCashPct">—</div></div>
+          <div class="kpi-card"><div class="kpi-head">Thẻ / QR</div><div class="kpi-val" id="payKpiCard">—</div><div class="small muted" id="payKpiCardPct">—</div></div>
+          <div class="kpi-card"><div class="kpi-head">Chuyển khoản</div><div class="kpi-val" id="payKpiBank">—</div><div class="small muted" id="payKpiBankPct">—</div></div>
+        </div>
+
+        <div class="filters">
+          <input type="date" id="paymentDateFilter" />
+          <select id="paymentMethodFilter">
+            <option value="all">Tất cả phương thức</option>
+            <option value="Tiền mặt">Tiền mặt</option>
+            <option value="Thẻ">Thẻ</option>
+            <option value="QR">QR</option>
+            <option value="Chuyển khoản">Chuyển khoản</option>
+          </select>
+          <select id="paymentCashierFilter">
+            <option value="all">Tất cả thu ngân</option>
+          </select>
+          <button class="btn btn-sm btn-ghost" id="btnClearPaymentFilters">Xoá lọc</button>
+        </div>
+
+        <div class="card">
+          <table>
+            <thead>
+              <tr>
+                <th>Mã GD</th><th>Booking</th><th>Khách hàng</th><th>Phương thức</th>
+                <th>Thu ngân</th><th>Thời gian</th><th class="right">Số tiền</th><th>Trạng thái</th>
+              </tr>
+            </thead>
+            <tbody id="paymentsTbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ========== REPORTS ========== -->
+      <section class="page" id="page-reports">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Báo cáo &amp; Phân tích</h1>
+            <div class="page-sub">Các chỉ số KPI vận hành và tài chính</div>
+          </div>
+          <div class="page-actions">
+            <select id="reportPeriod">
+              <option value="4/2026">Tháng 4/2026</option>
+              <option value="3/2026">Tháng 3/2026</option>
+              <option value="q1/2026">Q1/2026</option>
+            </select>
+            <button class="btn" id="btnReportExport">Xuất PDF</button>
+          </div>
+        </div>
+
+        <div class="two-col" style="grid-template-columns: 2fr 1fr">
+          <div class="card">
+            <div class="card-head"><h3 class="card-title">Doanh thu theo ngày</h3></div>
+            <div class="card-body" style="padding:16px 18px; height:320px"><canvas id="reportRevenue"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><h3 class="card-title">Cơ cấu doanh thu</h3></div>
+            <div class="card-body" style="padding:16px 18px; height:320px"><canvas id="reportBreakdown"></canvas></div>
+          </div>
+        </div>
+
+        <div class="two-col" style="grid-template-columns:1fr 1fr">
+          <div class="card">
+            <div class="card-head"><h3 class="card-title">Top phòng theo doanh thu</h3></div>
+            <table>
+              <thead><tr><th>Phòng</th><th>Loại</th><th class="right">Lượt đặt</th><th class="right">Doanh thu</th></tr></thead>
+              <tbody id="topRoomsTbody"></tbody>
+            </table>
+          </div>
+          <div class="card">
+            <div class="card-head"><h3 class="card-title">Tỷ lệ lấp đầy theo loại phòng</h3></div>
+            <div class="card-body" style="padding:16px 18px; height:300px"><canvas id="reportOccupancy"></canvas></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========== EMPLOYEES ========== -->
+      <section class="page" id="page-employees">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Nhân viên</h1>
+            <div class="page-sub">Danh sách nhân sự, vị trí và trạng thái làm việc</div>
+          </div>
+          <div class="page-actions">
+            <button class="btn btn-primary" data-action="new-employee">+ Thêm nhân viên</button>
+          </div>
+        </div>
+
+        <div class="filters">
+          <input type="text" id="employeeSearch" placeholder="Tìm theo tên, SĐT…" style="max-width:280px" />
+          <select id="employeePositionFilter">
+            <option value="all">Tất cả vị trí</option>
+            <option value="Lễ tân">Lễ tân</option>
+            <option value="Thu ngân">Thu ngân</option>
+            <option value="Buồng phòng">Buồng phòng</option>
+            <option value="Quản lý">Quản lý</option>
+          </select>
+          <select id="employeeWorkingFilter">
+            <option value="working">Đang làm việc</option>
+            <option value="left">Đã nghỉ</option>
+            <option value="all">Tất cả</option>
+          </select>
+        </div>
+
+        <div class="card">
+          <table>
+            <thead>
+              <tr>
+                <th>Mã NV</th><th>Họ tên</th><th>Ngày sinh</th><th>SĐT</th>
+                <th>Vị trí</th><th>Bắt đầu</th><th>Trạng thái</th><th></th>
+              </tr>
+            </thead>
+            <tbody id="employeesTbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ========== INTEGRATION ========== -->
+      <section class="page" id="page-integration">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Hướng dẫn kết nối Postgres</h1>
+            <div class="page-sub">Mẫu kết nối cho Python (FastAPI), Node.js (Express) và truy vấn SQL dùng cho từng module</div>
+          </div>
+        </div>
+
+        <div class="tabs" data-tabs-group="integration">
+          <button class="tab active" data-tab="int-python">Python / FastAPI</button>
+          <button class="tab" data-tab="int-node">Node.js / Express</button>
+          <button class="tab" data-tab="int-sql">SQL mẫu</button>
+        </div>
+
+        <div id="int-python" class="tab-pane">
+          <div class="card" style="padding: 18px">
+            <h4 style="margin:0 0 8px">Cài đặt</h4>
+            <pre><span class="c"># requirements.txt</span>
+fastapi==0.110
+uvicorn[standard]==0.29
+psycopg[binary]==3.1
+pydantic==2.6</pre>
+            <h4 style="margin:18px 0 8px">Kết nối &amp; endpoint danh sách booking</h4>
+            <pre><span class="k">from</span> fastapi <span class="k">import</span> FastAPI
+<span class="k">from</span> psycopg_pool <span class="k">import</span> AsyncConnectionPool
+<span class="k">from</span> datetime <span class="k">import</span> date
+
+app = FastAPI()
+pool = AsyncConnectionPool(<span class="s">"postgresql://user:pass@localhost:5432/hotelbooking"</span>)
+
+<span class="k">@app</span>.get(<span class="s">"/api/bookings"</span>)
+<span class="k">async def</span> list_bookings(status: str | None = <span class="n">None</span>,
+                        from_date: date | None = <span class="n">None</span>):
+    sql = <span class="s">"""
+      SELECT b.booking_id, c.customer_name,
+             b.checkin_datetime, b.checkout_datetime,
+             b.status, p.status AS payment_status,
+             COALESCE(SUM(bd.amount),0) AS total_amount
+      FROM booking b
+      JOIN customer c ON c.customer_id = b.customer_id
+      LEFT JOIN booking_detail bd ON bd.booking_id = b.booking_id
+      LEFT JOIN payment p ON p.payment_id = b.payment_id
+      WHERE (%s IS NULL OR b.status = %s)
+        AND (%s IS NULL OR b.checkin_datetime::date &gt;= %s)
+      GROUP BY b.booking_id, c.customer_name, p.status
+      ORDER BY b.created_at DESC LIMIT 200;
+    """</span>
+    <span class="k">async with</span> pool.connection() <span class="k">as</span> conn:
+        cur = <span class="k">await</span> conn.execute(sql, (status, status, from_date, from_date))
+        rows = <span class="k">await</span> cur.fetchall()
+        <span class="k">return</span> [<span class="k">dict</span>(zip([d[<span class="n">0</span>] <span class="k">for</span> d <span class="k">in</span> cur.description], r)) <span class="k">for</span> r <span class="k">in</span> rows]</pre>
+          </div>
+        </div>
+
+        <div id="int-node" class="tab-pane" style="display:none">
+          <div class="card" style="padding: 18px">
+            <h4 style="margin:0 0 8px">Endpoint quản lý phòng &amp; tạo booking</h4>
+            <pre><span class="k">import</span> express <span class="k">from</span> <span class="s">'express'</span>;
+<span class="k">import</span> { Pool } <span class="k">from</span> <span class="s">'pg'</span>;
+
+<span class="k">const</span> pool = <span class="k">new</span> Pool({ connectionString: process.env.DATABASE_URL });
+<span class="k">const</span> app = express(); app.use(express.json());
+
+app.get(<span class="s">'/api/rooms'</span>, <span class="k">async</span> (req, res) =&gt; {
+  <span class="k">const</span> { type, status } = req.query;
+  <span class="k">const</span> { rows } = <span class="k">await</span> pool.query(`
+    SELECT r.room_id, r.room_number, rt.room_type_name,
+           r.price_per_night, r.capacity, r.is_smoking,
+           ri.is_available
+    FROM room r
+    JOIN room_type rt ON rt.room_type_id = r.room_type_id
+    JOIN room_inventory ri ON ri.room_id = r.room_id
+    WHERE ($1::int IS NULL OR r.room_type_id = $1)
+      AND ($2::float IS NULL OR ri.is_available = $2)
+    ORDER BY r.room_number;
+  `, [type || <span class="k">null</span>, status === <span class="s">'available'</span> ? <span class="n">1</span> : status === <span class="s">'occupied'</span> ? <span class="n">0</span> : <span class="k">null</span>]);
+  res.json(rows);
+});
+
+app.post(<span class="s">'/api/bookings'</span>, <span class="k">async</span> (req, res) =&gt; {
+  <span class="k">const</span> client = <span class="k">await</span> pool.connect();
+  <span class="k">try</span> {
+    <span class="k">await</span> client.query(<span class="s">'BEGIN'</span>);
+    <span class="k">const</span> { rows: [b] } = <span class="k">await</span> client.query(`
+      INSERT INTO booking (customer_id, checkin_datetime, checkout_datetime, status, created_at)
+      VALUES ($1,$2,$3,'PENDING', NOW()) RETURNING booking_id;`,
+      [req.body.customer_id, req.body.checkin, req.body.checkout]);
+    <span class="k">for</span> (<span class="k">const</span> d <span class="k">of</span> req.body.rooms) {
+      <span class="k">await</span> client.query(`
+        INSERT INTO booking_detail (booking_id, room_id, quantity, price, amount)
+        VALUES ($1,$2,$3,$4,$3*$4);`,
+        [b.booking_id, d.room_id, d.nights, d.price]);
+    }
+    <span class="k">await</span> client.query(<span class="s">'COMMIT'</span>);
+    res.json({ booking_id: b.booking_id });
+  } <span class="k">catch</span> (e) {
+    <span class="k">await</span> client.query(<span class="s">'ROLLBACK'</span>);
+    res.status(<span class="n">500</span>).json({ error: e.message });
+  } <span class="k">finally</span> { client.release(); }
+});</pre>
+          </div>
+        </div>
+
+        <div id="int-sql" class="tab-pane" style="display:none">
+          <div class="card" style="padding: 18px">
+            <h4 style="margin:0 0 8px">Dashboard — các KPI chính</h4>
+            <pre><span class="c">-- Doanh thu hôm nay</span>
+SELECT COALESCE(SUM(pd.total_payment),0) AS revenue_today
+FROM payment_detail pd
+WHERE pd.payment_datetime::date = CURRENT_DATE;
+
+<span class="c">-- Tỷ lệ lấp đầy</span>
+SELECT ROUND(100.0 * SUM(CASE WHEN is_available = 0 THEN 1 ELSE 0 END) / COUNT(*), 1) AS occupancy_pct
+FROM room_inventory;
+
+<span class="c">-- Booking 7 ngày qua</span>
+SELECT DATE(b.checkin_datetime) AS d,
+       COUNT(*) AS bookings, SUM(bd.amount) AS revenue
+FROM booking b
+JOIN booking_detail bd ON bd.booking_id = b.booking_id
+WHERE b.checkin_datetime &gt;= CURRENT_DATE - INTERVAL <span class="s">'7 days'</span>
+GROUP BY 1 ORDER BY 1;</pre>
+            <h4 style="margin:18px 0 8px">Tự động cập nhật hạng thành viên</h4>
+            <pre>UPDATE customer c
+SET membership_type_id = mt.membership_type_id
+FROM membership_type mt
+WHERE c.total_paid &gt;= mt.paid_from
+  AND (mt.paid_to IS NULL OR c.total_paid &lt; mt.paid_to)
+  AND c.membership_type_id IS DISTINCT FROM mt.membership_type_id;</pre>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<!-- ========== MODALS ========== -->
+
+<!-- Booking Form Modal -->
+<div class="modal-bg" id="bookingModal">
+  <div class="modal wide">
+    <div class="modal-head">
+      <h3 class="modal-title" id="bookingModalTitle">Tạo booking mới</h3>
+      <button class="icon-btn" data-close>✕</button>
+    </div>
+    <div class="modal-body">
+      <form id="bookingForm">
+        <input type="hidden" name="id" />
+        <div class="form-grid">
+          <div class="form-field full">
+            <label>Khách hàng *</label>
+            <select name="customerId" required id="bookingCustomerSelect"></select>
+            <span class="err">Vui lòng chọn khách hàng</span>
+          </div>
+          <div class="form-field">
+            <label>Check-in *</label>
+            <input type="date" name="checkin" required />
+          </div>
+          <div class="form-field">
+            <label>Check-out *</label>
+            <input type="date" name="checkout" required />
+          </div>
+          <div class="form-field">
+            <label>Phòng *</label>
+            <select name="room" required id="bookingRoomSelect"></select>
+          </div>
+          <div class="form-field">
+            <label>Số lượng phòng</label>
+            <input type="number" name="quantity" value="1" min="1" />
+          </div>
+          <div class="form-field full">
+            <label>Ghi chú</label>
+            <textarea name="notes" rows="2" placeholder="Yêu cầu đặc biệt..."></textarea>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" data-close>Huỷ</button>
+      <button class="btn btn-primary" id="bookingFormSubmit">Lưu</button>
+    </div>
+  </div>
+</div>
+
+<!-- Booking Detail Modal -->
+<div class="modal-bg" id="bookingDetailModal">
+  <div class="modal wide">
+    <div class="modal-head">
+      <h3 class="modal-title">Chi tiết booking</h3>
+      <button class="icon-btn" data-close>✕</button>
+    </div>
+    <div class="modal-body" id="bookingDetailBody"></div>
+    <div class="modal-foot" id="bookingDetailFoot"></div>
+  </div>
+</div>
+
+<!-- Customer Form Modal -->
+<div class="modal-bg" id="customerModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 class="modal-title" id="customerModalTitle">Thêm khách hàng</h3>
+      <button class="icon-btn" data-close>✕</button>
+    </div>
+    <div class="modal-body">
+      <form id="customerForm">
+        <input type="hidden" name="id" />
+        <div class="form-grid">
+          <div class="form-field full">
+            <label>Họ và tên *</label>
+            <input type="text" name="name" required />
+            <span class="err">Vui lòng nhập tên</span>
+          </div>
+          <div class="form-field">
+            <label>Giới tính</label>
+            <select name="sex"><option>Nam</option><option>Nữ</option><option>—</option></select>
+          </div>
+          <div class="form-field">
+            <label>Ngày sinh</label>
+            <input type="date" name="dob" />
+          </div>
+          <div class="form-field">
+            <label>Số điện thoại *</label>
+            <input type="text" name="phone" required />
+          </div>
+          <div class="form-field">
+            <label>Email</label>
+            <input type="email" name="email" />
+          </div>
+          <div class="form-field full">
+            <label>Ghi chú</label>
+            <textarea name="notes" rows="2"></textarea>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" data-close>Huỷ</button>
+      <button class="btn btn-primary" id="customerFormSubmit">Lưu</button>
+    </div>
+  </div>
+</div>
+
+<!-- Customer Detail Modal -->
+<div class="modal-bg" id="customerDetailModal">
+  <div class="modal wide">
+    <div class="modal-head">
+      <h3 class="modal-title">Hồ sơ khách hàng</h3>
+      <button class="icon-btn" data-close>✕</button>
+    </div>
+    <div class="modal-body" id="customerDetailBody"></div>
+    <div class="modal-foot"><button class="btn" data-close>Đóng</button></div>
+  </div>
+</div>
+
+<!-- Room Form Modal -->
+<div class="modal-bg" id="roomModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 class="modal-title" id="roomModalTitle">Thêm phòng</h3>
+      <button class="icon-btn" data-close>✕</button>
+    </div>
+    <div class="modal-body">
+      <form id="roomForm">
+        <input type="hidden" name="number_old" />
+        <div class="form-grid">
+          <div class="form-field">
+            <label>Số phòng *</label>
+            <input type="text" name="number" required placeholder="VD: 301" />
+          </div>
+          <div class="form-field">
+            <label>Loại phòng *</label>
+            <select name="type" required>
+              <option>Standard</option><option>Deluxe</option><option>Suite</option><option>Family</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>Giá/đêm (₫) *</label>
+            <input type="number" name="price" required min="0" step="10000" />
+          </div>
+          <div class="form-field">
+            <label>Sức chứa</label>
+            <select name="capacity">
+              <option>1 khách</option><option>2 khách</option><option>3 khách</option><option>4 khách</option><option>5 khách</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>Diện tích</label>
+            <input type="text" name="area" placeholder="VD: 32m²" />
+          </div>
+          <div class="form-field">
+            <label>Hút thuốc</label>
+            <select name="smoking"><option value="false">Không</option><option value="true">Có</option></select>
+          </div>
+          <div class="form-field full">
+            <label>Trạng thái</label>
+            <select name="status">
+              <option value="available">Trống</option>
+              <option value="occupied">Đang ở</option>
+              <option value="maintenance">Bảo trì</option>
+            </select>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-danger" id="roomDeleteBtn" style="margin-right:auto; display:none">Xoá phòng</button>
+      <button class="btn" data-close>Huỷ</button>
+      <button class="btn btn-primary" id="roomFormSubmit">Lưu</button>
+    </div>
+  </div>
+</div>
+
+<!-- Service Form Modal -->
+<div class="modal-bg" id="serviceModal">
+  <div class="modal narrow">
+    <div class="modal-head">
+      <h3 class="modal-title" id="serviceModalTitle">Thêm dịch vụ</h3>
+      <button class="icon-btn" data-close>✕</button>
+    </div>
+    <div class="modal-body">
+      <form id="serviceForm">
+        <input type="hidden" name="id" />
+        <div class="form-field" style="margin-bottom:12px">
+          <label>Tên dịch vụ *</label>
+          <input type="text" name="name" required />
+        </div>
+        <div class="form-field" style="margin-bottom:12px">
+          <label>Danh mục *</label>
+          <select name="catalog" required>
+            <option>Ăn uống</option><option>Spa &amp; Wellness</option>
+            <option>Giặt là</option><option>Đưa đón</option><option>Khác</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>Đơn giá (₫) *</label>
+          <input type="number" name="price" required min="0" step="1000" />
+        </div>
+      </form>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-danger" id="serviceDeleteBtn" style="margin-right:auto; display:none">Xoá</button>
+      <button class="btn" data-close>Huỷ</button>
+      <button class="btn btn-primary" id="serviceFormSubmit">Lưu</button>
+    </div>
+  </div>
+</div>
+
+<!-- Employee Form Modal -->
+<div class="modal-bg" id="employeeModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 class="modal-title" id="employeeModalTitle">Thêm nhân viên</h3>
+      <button class="icon-btn" data-close>✕</button>
+    </div>
+    <div class="modal-body">
+      <form id="employeeForm">
+        <input type="hidden" name="id" />
+        <div class="form-grid">
+          <div class="form-field full">
+            <label>Họ và tên *</label>
+            <input type="text" name="name" required />
+          </div>
+          <div class="form-field">
+            <label>Ngày sinh</label>
+            <input type="date" name="dob" />
+          </div>
+          <div class="form-field">
+            <label>Số điện thoại *</label>
+            <input type="text" name="phone" required />
+          </div>
+          <div class="form-field">
+            <label>Vị trí *</label>
+            <select name="position" required>
+              <option>Lễ tân</option><option>Thu ngân</option>
+              <option>Buồng phòng</option><option>Quản lý</option><option>Bảo vệ</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>Ngày bắt đầu</label>
+            <input type="date" name="start" />
+          </div>
+          <div class="form-field full">
+            <label>Trạng thái</label>
+            <select name="working"><option value="true">Đang làm việc</option><option value="false">Đã nghỉ</option></select>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-danger" id="employeeDeleteBtn" style="margin-right:auto; display:none">Xoá</button>
+      <button class="btn" data-close>Huỷ</button>
+      <button class="btn btn-primary" id="employeeFormSubmit">Lưu</button>
+    </div>
+  </div>
+</div>
+
+<!-- Payment Form Modal -->
+<div class="modal-bg" id="paymentModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 class="modal-title">Ghi nhận thanh toán</h3>
+      <button class="icon-btn" data-close>✕</button>
+    </div>
+    <div class="modal-body">
+      <form id="paymentForm">
+        <div class="form-grid">
+          <div class="form-field full">
+            <label>Booking *</label>
+            <select name="bookingId" required id="paymentBookingSelect"></select>
+          </div>
+          <div class="form-field">
+            <label>Số tiền (₫) *</label>
+            <input type="number" name="amount" required min="0" step="1000" />
+          </div>
+          <div class="form-field">
+            <label>Phương thức *</label>
+            <select name="method" required>
+              <option>Tiền mặt</option><option>Thẻ</option><option>QR</option><option>Chuyển khoản</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>Thu ngân *</label>
+            <select name="cashier" required id="paymentCashierSelect"></select>
+          </div>
+          <div class="form-field">
+            <label>Thời gian</label>
+            <input type="datetime-local" name="datetime" />
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" data-close>Huỷ</button>
+      <button class="btn btn-primary" id="paymentFormSubmit">Lưu</button>
+    </div>
+  </div>
+</div>
+
+<!-- Price Form Modal -->
+<div class="modal-bg" id="priceModal">
+  <div class="modal narrow">
+    <div class="modal-head">
+      <h3 class="modal-title">Áp giá mới</h3>
+      <button class="icon-btn" data-close>✕</button>
+    </div>
+    <div class="modal-body">
+      <form id="priceForm">
+        <div class="form-field" style="margin-bottom:12px">
+          <label>Phòng *</label>
+          <select name="roomNumber" required id="priceRoomSelect"></select>
+        </div>
+        <div class="form-field" style="margin-bottom:12px">
+          <label>Áp dụng từ *</label>
+          <input type="date" name="from" required />
+        </div>
+        <div class="form-field" style="margin-bottom:12px">
+          <label>Áp dụng đến (để trống = không giới hạn)</label>
+          <input type="date" name="to" />
+        </div>
+        <div class="form-field">
+          <label>Giá/đêm (₫) *</label>
+          <input type="number" name="price" required min="0" step="10000" />
+        </div>
+      </form>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" data-close>Huỷ</button>
+      <button class="btn btn-primary" id="priceFormSubmit">Lưu</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Modal -->
+<div class="modal-bg" id="confirmModal">
+  <div class="modal narrow">
+    <div class="modal-head">
+      <h3 class="modal-title" id="confirmTitle">Xác nhận</h3>
+      <button class="icon-btn" data-close>✕</button>
+    </div>
+    <div class="modal-body" id="confirmBody">Bạn có chắc chắn?</div>
+    <div class="modal-foot">
+      <button class="btn" data-close>Huỷ</button>
+      <button class="btn btn-danger" id="confirmOk">Xác nhận</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+/* =====================================================================
+   HOTEL BOOKING ADMIN — JavaScript (full CRUD + filters + persistence)
+   ===================================================================== */
+
+/* ---------- STORAGE / API ---------- */
+const API_BASE = '';  // Flask phục vụ cùng origin
+
+function generateRooms() {
+  const types = ['Standard', 'Deluxe', 'Suite', 'Family'];
+  const typePrices = { 'Standard': 900000, 'Deluxe': 1800000, 'Suite': 3600000, 'Family': 2400000 };
+  const typeCaps = { 'Standard': '2 khách', 'Deluxe': '2 khách', 'Suite': '4 khách', 'Family': '5 khách' };
+  const typeArea = { 'Standard': '22m²', 'Deluxe': '32m²', 'Suite': '56m²', 'Family': '48m²' };
+  const out = [];
+  for (let f = 1; f <= 5; f++) {
+    for (let r = 1; r <= 10; r++) {
+      const number = `${f}${String(r).padStart(2, '0')}`;
+      let type = f === 5 ? 'Suite'
+               : f === 4 ? (r <= 5 ? 'Family' : 'Suite')
+               : f === 1 ? 'Standard'
+               : (r <= 5 ? 'Deluxe' : 'Standard');
+      const seed = (f * 10 + r) % 10;
+      const status = seed < 6 ? 'available' : seed < 9 ? 'occupied' : 'maintenance';
+      out.push({
+        number, type,
+        capacity: typeCaps[type], area: typeArea[type],
+        price: typePrices[type],
+        smoking: (f * r) % 7 === 0,
+        status,
+      });
+    }
+  }
+  return out;
+}
+
+function seedData() {
+  return {
+    bookings: [
+      { id: 'BK-2104', customer: 'Trần Thị Mai', customerId: 3, checkin: '2026-04-22', checkout: '2026-04-25', rooms: '201, 305', status: 'checked_in', payment: 'paid', amount: 4200000, notes: '' },
+      { id: 'BK-2103', customer: 'Nguyễn Văn An', customerId: 2, checkin: '2026-04-23', checkout: '2026-04-24', rooms: '102', status: 'confirmed', payment: 'partial', amount: 1800000, notes: '' },
+      { id: 'BK-2102', customer: 'Lê Hoàng Minh', customerId: 1, checkin: '2026-04-24', checkout: '2026-04-26', rooms: '501', status: 'pending', payment: 'unpaid', amount: 7200000, notes: 'Yêu cầu phòng tầng cao' },
+      { id: 'BK-2101', customer: 'Phạm Thu Hà', customerId: 4, checkin: '2026-04-20', checkout: '2026-04-23', rooms: '208, 209', status: 'checked_out', payment: 'paid', amount: 5400000, notes: '' },
+      { id: 'BK-2100', customer: 'Võ Minh Tuấn', customerId: 5, checkin: '2026-04-23', checkout: '2026-04-25', rooms: '304', status: 'cancelled', payment: 'refunded', amount: 0, notes: 'Khách huỷ do đổi lịch' },
+      { id: 'BK-2099', customer: 'Đỗ Thị Ngọc', customerId: 6, checkin: '2026-04-23', checkout: '2026-04-27', rooms: '105', status: 'confirmed', payment: 'paid', amount: 3600000, notes: '' },
+      { id: 'BK-2098', customer: 'Công ty TNHH Thiên Phúc', customerId: 7, checkin: '2026-04-25', checkout: '2026-04-28', rooms: '401, 402, 403', status: 'confirmed', payment: 'partial', amount: 16200000, notes: 'Đoàn công tác' },
+      { id: 'BK-2097', customer: 'Hoàng Văn Đức', customerId: 8, checkin: '2026-04-22', checkout: '2026-04-23', rooms: '203', status: 'checked_out', payment: 'paid', amount: 1800000, notes: '' },
+    ],
+    customers: [
+      { id: 1, name: 'Lê Hoàng Minh', sex: 'Nam', phone: '0901234567', email: 'minh.le@email.com', dob: '1985-03-12', tier: 'Diamond', totalPaid: 68400000, notes: '' },
+      { id: 2, name: 'Nguyễn Văn An', sex: 'Nam', phone: '0987654321', email: 'an.nv@email.com', dob: '1990-07-22', tier: 'Silver', totalPaid: 12600000, notes: '' },
+      { id: 3, name: 'Trần Thị Mai', sex: 'Nữ', phone: '0912345678', email: 'mai.tran@email.com', dob: '1992-11-04', tier: 'Gold', totalPaid: 31200000, notes: '' },
+      { id: 4, name: 'Phạm Thu Hà', sex: 'Nữ', phone: '0923456789', email: 'ha.pham@email.com', dob: '1988-05-17', tier: 'Gold', totalPaid: 24800000, notes: '' },
+      { id: 5, name: 'Võ Minh Tuấn', sex: 'Nam', phone: '0934567890', email: 'tuan.vo@email.com', dob: '1995-09-30', tier: 'Silver', totalPaid: 8400000, notes: '' },
+      { id: 6, name: 'Đỗ Thị Ngọc', sex: 'Nữ', phone: '0945678901', email: 'ngoc.do@email.com', dob: '1993-02-14', tier: 'Silver', totalPaid: 6900000, notes: '' },
+      { id: 7, name: 'Công ty TNHH Thiên Phúc', sex: '—', phone: '02838123456', email: 'info@thienphuc.vn', dob: '2015-01-01', tier: 'Diamond', totalPaid: 52000000, notes: 'Khách doanh nghiệp' },
+      { id: 8, name: 'Hoàng Văn Đức', sex: 'Nam', phone: '0956789012', email: 'duc.hv@email.com', dob: '1987-08-19', tier: 'Silver', totalPaid: 4200000, notes: '' },
+    ],
+    rooms: generateRooms(),
+    services: [
+      { id: 1, name: 'Bữa sáng buffet', catalog: 'Ăn uống', price: 150000, used: 412 },
+      { id: 2, name: 'Bữa tối set menu', catalog: 'Ăn uống', price: 450000, used: 186 },
+      { id: 3, name: 'Mini bar', catalog: 'Ăn uống', price: 80000, used: 248 },
+      { id: 4, name: 'Spa toàn thân 60 phút', catalog: 'Spa & Wellness', price: 450000, used: 96 },
+      { id: 5, name: 'Massage chân 30 phút', catalog: 'Spa & Wellness', price: 250000, used: 142 },
+      { id: 6, name: 'Xông hơi khô', catalog: 'Spa & Wellness', price: 180000, used: 78 },
+      { id: 7, name: 'Giặt là theo kg', catalog: 'Giặt là', price: 80000, used: 204 },
+      { id: 8, name: 'Giặt hấp comple', catalog: 'Giặt là', price: 150000, used: 32 },
+      { id: 9, name: 'Đưa đón sân bay', catalog: 'Đưa đón', price: 350000, used: 118 },
+      { id: 10, name: 'Thuê xe theo giờ', catalog: 'Đưa đón', price: 250000, used: 54 },
+      { id: 11, name: 'Hoa + rượu vang chào đón', catalog: 'Khác', price: 650000, used: 28 },
+    ],
+    employees: [
+      { id: 'EMP-001', name: 'Nguyễn Hoàng Anh', dob: '1995-04-15', phone: '0901111222', position: 'Thu ngân', start: '2022-03-01', working: true },
+      { id: 'EMP-002', name: 'Trần Thu Trang', dob: '1998-11-20', phone: '0902222333', position: 'Thu ngân', start: '2023-06-12', working: true },
+      { id: 'EMP-003', name: 'Lê Quang Huy', dob: '1990-08-07', phone: '0903333444', position: 'Thu ngân', start: '2020-01-15', working: true },
+      { id: 'EMP-004', name: 'Phạm Thanh Vân', dob: '1993-02-28', phone: '0904444555', position: 'Lễ tân', start: '2021-09-01', working: true },
+      { id: 'EMP-005', name: 'Vũ Minh Khoa', dob: '1996-07-11', phone: '0905555666', position: 'Lễ tân', start: '2024-02-05', working: true },
+      { id: 'EMP-006', name: 'Đặng Kiều Oanh', dob: '1991-12-03', phone: '0906666777', position: 'Buồng phòng', start: '2019-05-20', working: true },
+      { id: 'EMP-007', name: 'Bùi Văn Hậu', dob: '1988-06-18', phone: '0907777888', position: 'Buồng phòng', start: '2018-11-10', working: false },
+      { id: 'EMP-008', name: 'Ngô Thị Lan', dob: '1985-09-25', phone: '0908888999', position: 'Quản lý', start: '2017-04-01', working: true },
+    ],
+    payments: [
+      { id: 'PAY-3301', bookingId: 'BK-2104', customer: 'Trần Thị Mai', method: 'Thẻ', cashier: 'Nguyễn Hoàng Anh', datetime: '2026-04-23T08:12', amount: 4200000, status: 'success' },
+      { id: 'PAY-3300', bookingId: 'BK-2103', customer: 'Nguyễn Văn An', method: 'Tiền mặt', cashier: 'Trần Thu Trang', datetime: '2026-04-23T07:58', amount: 900000, status: 'success' },
+      { id: 'PAY-3299', bookingId: 'BK-2101', customer: 'Phạm Thu Hà', method: 'QR', cashier: 'Lê Quang Huy', datetime: '2026-04-23T07:32', amount: 5400000, status: 'success' },
+      { id: 'PAY-3298', bookingId: 'BK-2098', customer: 'Công ty TNHH Thiên Phúc', method: 'Chuyển khoản', cashier: 'Nguyễn Hoàng Anh', datetime: '2026-04-23T07:15', amount: 8100000, status: 'success' },
+      { id: 'PAY-3297', bookingId: 'BK-2097', customer: 'Hoàng Văn Đức', method: 'Tiền mặt', cashier: 'Trần Thu Trang', datetime: '2026-04-23T06:45', amount: 1800000, status: 'success' },
+      { id: 'PAY-3296', bookingId: 'BK-2099', customer: 'Đỗ Thị Ngọc', method: 'Thẻ', cashier: 'Lê Quang Huy', datetime: '2026-04-23T06:20', amount: 3600000, status: 'success' },
+      { id: 'PAY-3295', bookingId: 'BK-2100', customer: 'Võ Minh Tuấn', method: 'Tiền mặt', cashier: 'Nguyễn Hoàng Anh', datetime: '2026-04-23T05:50', amount: -1800000, status: 'refund' },
+    ],
+    priceLogs: [
+      { id: 101, roomNumber: '201', from: '2026-01-01', to: '2026-03-31', price: 1500000 },
+      { id: 102, roomNumber: '201', from: '2026-04-01', to: null, price: 1800000 },
+      { id: 103, roomNumber: '501', from: '2026-02-15', to: null, price: 3600000 },
+      { id: 104, roomNumber: '102', from: '2026-04-01', to: null, price: 900000 },
+    ],
+    notifications: [
+      { id: 1, title: 'Booking mới #BK-2104', sub: 'Trần Thị Mai — 2 phòng · 3 đêm', time: '8 phút trước', unread: true, icon: '📅' },
+      { id: 2, title: 'Thanh toán thành công', sub: 'PAY-3301 — 4.200.000 ₫', time: '12 phút trước', unread: true, icon: '💳' },
+      { id: 3, title: 'Phòng 304 cần bảo trì', sub: 'Ghi nhận từ buồng phòng', time: '1 giờ trước', unread: true, icon: '🔧' },
+      { id: 4, title: 'Khách hàng Diamond mới', sub: 'Lê Hoàng Minh đạt chi tiêu 68.4M', time: 'Hôm qua', unread: false, icon: '💎' },
+    ],
+    counters: { booking: 2105, customer: 9, service: 12, employee: 9, payment: 3302, price: 105 }
+  };
+}
+
+let STATE = {};
+
+const EMPTY_STATE = {
+  bookings: [], customers: [], rooms: [], services: [],
+  employees: [], payments: [], priceLogs: [], notifications: [],
+  counters: { booking: 1, customer: 1, service: 1, employee: 1, payment: 1, price: 1 }
+};
+
+async function loadStateFromAPI() {
+  try {
+    const res = await fetch(`${API_BASE}/api/state`);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    // Đảm bảo mọi key đều tồn tại (DB rỗng vẫn trả về object hợp lệ)
+    return { ...EMPTY_STATE, ...data };
+  } catch (e) {
+    console.warn('API không kết nối được, dùng chế độ offline:', e);
+    return { ...EMPTY_STATE };
+  }
+}
+
+function saveState() {
+  // Fire-and-forget: UI cập nhật ngay, DB lưu nền
+  fetch(`${API_BASE}/api/state`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(STATE),
+  }).catch(e => console.warn('saveState lỗi:', e));
+}
+
+async function resetData() {
+  try {
+    await fetch(`${API_BASE}/api/state/reset`, { method: 'POST' });
+    STATE = { ...EMPTY_STATE };
+  } catch (e) {
+    console.warn('Reset lỗi:', e);
+  }
+  filters.reset();
+  renderAll();
+  toast('Đã xoá toàn bộ dữ liệu', 'success');
+}
+
+/* ---------- FILTERS ---------- */
+const filters = {
+  bookings: { status: 'all', date: '', search: '' },
+  rooms: { status: 'all', type: 'all' },
+  customers: { tier: 'all', sort: 'new', search: '' },
+  services: { catalog: 'all' },
+  payments: { date: '', method: 'all', cashier: 'all' },
+  employees: { position: 'all', working: 'working', search: '' },
+  reset() {
+    this.bookings = { status: 'all', date: '', search: '' };
+    this.rooms = { status: 'all', type: 'all' };
+    this.customers = { tier: 'all', sort: 'new', search: '' };
+    this.services = { catalog: 'all' };
+    this.payments = { date: '', method: 'all', cashier: 'all' };
+    this.employees = { position: 'all', working: 'working', search: '' };
+  }
+};
+
+/* ---------- FORMATTERS ---------- */
+const fmtVND = n => new Intl.NumberFormat('vi-VN').format(n);
+const fmtDate = s => {
+  if (!s) return '—';
+  const [y, m, d] = s.split('-');
+  return `${d}/${m}/${y.slice(2)}`;
+};
+const fmtDateTime = s => {
+  if (!s) return '—';
+  const [d, t] = s.split('T');
+  return `${fmtDate(d)} ${(t || '').slice(0, 5)}`;
+};
+const fmtMoneyShort = n => {
+  if (Math.abs(n) >= 1e9) return (n / 1e9).toFixed(1) + 'B';
+  if (Math.abs(n) >= 1e6) return (n / 1e6).toFixed(1) + 'M';
+  if (Math.abs(n) >= 1e3) return (n / 1e3).toFixed(1) + 'K';
+  return String(n);
+};
+
+const statusMap = {
+  pending:     { label: 'Chờ xác nhận',  cls: 'b-warning', dot: '#f59e0b' },
+  confirmed:   { label: 'Đã xác nhận',   cls: 'b-primary', dot: '#2563eb' },
+  checked_in:  { label: 'Đã nhận phòng', cls: 'b-success', dot: '#10b981' },
+  checked_out: { label: 'Đã trả phòng',  cls: '',          dot: '#6b7280' },
+  cancelled:   { label: 'Đã huỷ',        cls: 'b-danger',  dot: '#dc2626' },
+};
+const paymentMap = {
+  paid:     { label: 'Đã thanh toán', cls: 'b-success' },
+  partial:  { label: 'Một phần',      cls: 'b-warning' },
+  unpaid:   { label: 'Chưa',          cls: 'b-danger' },
+  refunded: { label: 'Hoàn tiền',     cls: '' },
+};
+const tierMap = { 'Diamond': 'b-purple', 'Gold': 'b-warning', 'Silver': '' };
+const tierForSpend = v => v >= 50e6 ? 'Diamond' : v >= 20e6 ? 'Gold' : 'Silver';
+
+/* ---------- TOAST ---------- */
+function toast(msg, type = 'info', title = '') {
+  const icons = { success: '✓', error: '✕', warning: '⚠', info: 'ℹ' };
+  const titles = { success: 'Thành công', error: 'Có lỗi', warning: 'Chú ý', info: 'Thông báo' };
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `
+    <div class="toast-icon">${icons[type]}</div>
+    <div style="flex:1">
+      <div class="toast-title">${title || titles[type]}</div>
+      <div class="toast-msg">${msg}</div>
+    </div>
+    <button class="toast-close">✕</button>
+  `;
+  document.getElementById('toastContainer').appendChild(el);
+  el.querySelector('.toast-close').onclick = () => el.remove();
+  setTimeout(() => { el.style.opacity = '0'; el.style.transform = 'translateX(20px)'; el.style.transition = 'all .2s'; }, 3400);
+  setTimeout(() => el.remove(), 3700);
+}
+
+/* ---------- MODALS ---------- */
+function openModal(id) { document.getElementById(id).classList.add('show'); }
+function closeModal(id) {
+  const m = document.getElementById(id);
+  if (m) m.classList.remove('show');
+  m?.querySelectorAll('form').forEach(f => f.reset());
+  m?.querySelectorAll('.form-field.invalid').forEach(f => f.classList.remove('invalid'));
+}
+
+function confirm2(message, onOk, title = 'Xác nhận', okLabel = 'Xác nhận', danger = true) {
+  document.getElementById('confirmTitle').textContent = title;
+  document.getElementById('confirmBody').innerHTML = message;
+  const okBtn = document.getElementById('confirmOk');
+  okBtn.textContent = okLabel;
+  okBtn.className = 'btn ' + (danger ? 'btn-danger' : 'btn-primary');
+  okBtn.onclick = () => { closeModal('confirmModal'); onOk(); };
+  openModal('confirmModal');
+}
+
+// Close modal on backdrop click & data-close buttons
+document.addEventListener('click', (e) => {
+  if (e.target.classList && e.target.classList.contains('modal-bg')) e.target.classList.remove('show');
+  if (e.target.closest && e.target.closest('[data-close]')) {
+    const m = e.target.closest('.modal-bg');
+    if (m) closeModal(m.id);
+  }
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') document.querySelectorAll('.modal-bg.show').forEach(m => m.classList.remove('show'));
+});
+
+/* ---------- RENDER: DASHBOARD ---------- */
+const TODAY = '2026-04-23';
+
+function computeDashboardKPIs() {
+  const todayBookings = STATE.bookings.filter(b => b.checkin === TODAY && b.status !== 'cancelled').length;
+  const todayRevenue = STATE.payments
+    .filter(p => p.datetime.startsWith(TODAY) && p.amount > 0)
+    .reduce((s, p) => s + p.amount, 0);
+  const occ = STATE.rooms.filter(r => r.status === 'occupied').length;
+  const total = STATE.rooms.length;
+  const occupancy = total ? Math.round((occ / total) * 100) : 0;
+  return { todayBookings, todayRevenue, occupancy, customers: STATE.customers.length };
+}
+
+function renderDashboard() {
+  const now = new Date();
+  const hh = String(now.getHours()).padStart(2, '0');
+  const mm = String(now.getMinutes()).padStart(2, '0');
+  document.getElementById('dashSubtitle').textContent = `Tổng quan hoạt động — cập nhật lúc ${hh}:${mm}, 23/04/2026`;
+
+  const k = computeDashboardKPIs();
+  document.getElementById('kpiBookingsToday').textContent = k.todayBookings;
+  document.getElementById('kpiBookingsTodayChg').textContent = `▲ Có ${k.todayBookings} booking nhận phòng hôm nay`;
+  document.getElementById('kpiRevenueToday').innerHTML = `${fmtMoneyShort(k.todayRevenue)} <span style="font-size:14px;color:var(--text-muted);font-weight:500">₫</span>`;
+  document.getElementById('kpiOccupancy').textContent = `${k.occupancy}%`;
+  const chg = document.getElementById('kpiOccupancyChg');
+  chg.textContent = `${k.occupancy >= 70 ? '▲' : '▼'} ${k.occupancy}% phòng đang có khách`;
+  chg.className = 'kpi-change ' + (k.occupancy >= 70 ? 'kpi-up' : 'kpi-down');
+  document.getElementById('kpiCustomers').textContent = k.customers;
+  document.getElementById('kpiCustomersChg').textContent = `▲ Tổng khách trong hệ thống`;
+
+  // recent bookings
+  const recent = [...STATE.bookings].slice(0, 5);
+  document.getElementById('recentBookings').innerHTML = recent.map(b => {
+    const s = statusMap[b.status];
+    return `<tr data-action="view-booking" data-id="${b.id}" style="cursor:pointer">
+      <td class="strong">#${b.id}</td>
+      <td>${b.customer}</td>
+      <td>${b.rooms}</td>
+      <td><span class="badge ${s.cls}"><span class="dot" style="background:${s.dot}"></span>${s.label}</span></td>
+      <td class="num right">${fmtVND(b.amount)}</td>
+    </tr>`;
+  }).join('');
+
+  // top customers
+  const top = [...STATE.customers].sort((a, b) => b.totalPaid - a.totalPaid).slice(0, 5);
+  document.getElementById('topCustomers').innerHTML = top.map(c => `
+    <tr data-action="view-customer" data-id="${c.id}" style="cursor:pointer">
+      <td class="strong">${c.name}</td>
+      <td><span class="badge ${tierMap[c.tier]}">${c.tier}</span></td>
+      <td class="num right strong">${fmtMoneyShort(c.totalPaid)}</td>
+    </tr>
+  `).join('');
+
+  // revenue sum
+  const days = parseInt(document.querySelector('#revenuePeriod .chip.active')?.dataset.period || '7');
+  const totalRev = revenueSeries(days).reduce((s, v) => s + v.room + v.service, 0);
+  document.getElementById('revenueSum').textContent = fmtMoneyShort(totalRev * 1e6) + ' ₫';
+}
+
+function revenueSeries(days) {
+  // deterministic series based on days
+  const out = [];
+  const base = [24, 28, 32, 30, 38, 46, 48, 42, 35, 31];
+  for (let i = 0; i < days; i++) {
+    const room = base[i % base.length] + (i % 3);
+    const service = Math.round(room * 0.33);
+    out.push({ room, service });
+  }
+  return out;
+}
+
+/* ---------- RENDER: BOOKINGS ---------- */
+function renderBookings() {
+  const tbody = document.getElementById('bookingsTbody');
+  const f = filters.bookings;
+  let list = STATE.bookings;
+  if (f.status !== 'all') list = list.filter(b => b.status === f.status);
+  if (f.date) list = list.filter(b => b.checkin <= f.date && b.checkout >= f.date);
+  if (f.search) {
+    const q = f.search.toLowerCase();
+    list = list.filter(b =>
+      b.id.toLowerCase().includes(q) ||
+      b.customer.toLowerCase().includes(q) ||
+      b.rooms.toLowerCase().includes(q)
+    );
+  }
+
+  tbody.innerHTML = list.length === 0
+    ? `<tr class="empty-row"><td colspan="9">Không có booking nào khớp bộ lọc</td></tr>`
+    : list.map(b => {
+      const s = statusMap[b.status];
+      const p = paymentMap[b.payment];
+      return `<tr>
+        <td class="strong">#${b.id}</td>
+        <td>${b.customer}</td>
+        <td>${fmtDate(b.checkin)}</td>
+        <td>${fmtDate(b.checkout)}</td>
+        <td>${b.rooms}</td>
+        <td><span class="badge ${s.cls}"><span class="dot" style="background:${s.dot}"></span>${s.label}</span></td>
+        <td><span class="badge ${p.cls}">${p.label}</span></td>
+        <td class="num right strong">${fmtVND(b.amount)}</td>
+        <td>
+          <div class="dropdown">
+            <button class="btn btn-sm btn-ghost" data-toggle-menu>⋯</button>
+            <div class="dropdown-menu" style="right:0">
+              <button class="dropdown-item" data-action="view-booking" data-id="${b.id}">👁  Xem chi tiết</button>
+              <button class="dropdown-item" data-action="edit-booking" data-id="${b.id}">✎  Sửa</button>
+              ${b.status === 'pending' ? `<button class="dropdown-item" data-action="booking-status" data-id="${b.id}" data-status="confirmed">✓  Xác nhận</button>` : ''}
+              ${b.status === 'confirmed' ? `<button class="dropdown-item" data-action="booking-status" data-id="${b.id}" data-status="checked_in">🔑  Check-in</button>` : ''}
+              ${b.status === 'checked_in' ? `<button class="dropdown-item" data-action="booking-status" data-id="${b.id}" data-status="checked_out">🚪  Check-out</button>` : ''}
+              ${['pending','confirmed'].includes(b.status) ? `<div class="dropdown-divider"></div><button class="dropdown-item danger" data-action="cancel-booking" data-id="${b.id}">✕  Huỷ booking</button>` : ''}
+              <div class="dropdown-divider"></div>
+              <button class="dropdown-item danger" data-action="delete-booking" data-id="${b.id}">🗑  Xoá</button>
+            </div>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+}
+
+function renderBookingStatusFilters() {
+  const counts = { all: STATE.bookings.length };
+  Object.keys(statusMap).forEach(k => {
+    counts[k] = STATE.bookings.filter(b => b.status === k).length;
+  });
+  const el = document.getElementById('bookingStatusFilters');
+  el.innerHTML = `
+    <button class="chip ${filters.bookings.status === 'all' ? 'active' : ''}" data-bstatus="all">Tất cả <span style="opacity:.6">· ${counts.all}</span></button>
+    ${Object.entries(statusMap).map(([k, v]) => `
+      <button class="chip ${filters.bookings.status === k ? 'active' : ''}" data-bstatus="${k}">${v.label} <span style="opacity:.6">· ${counts[k] || 0}</span></button>
+    `).join('')}
+  `;
+}
+
+function openBookingDetail(id) {
+  const b = STATE.bookings.find(x => x.id === id);
+  if (!b) return;
+  const s = statusMap[b.status];
+  const p = paymentMap[b.payment];
+  const body = document.getElementById('bookingDetailBody');
+  body.innerHTML = `
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px">
+      <div style="font-size:18px; font-weight:700">#${b.id}</div>
+      <span class="badge ${s.cls}"><span class="dot" style="background:${s.dot}"></span>${s.label}</span>
+      <span class="badge ${p.cls}">${p.label}</span>
+    </div>
+    <div class="detail-grid">
+      <div class="detail-row"><label>Khách hàng</label><div class="v">${b.customer}</div></div>
+      <div class="detail-row"><label>Phòng</label><div class="v">${b.rooms}</div></div>
+      <div class="detail-row"><label>Check-in</label><div class="v">${fmtDate(b.checkin)}</div></div>
+      <div class="detail-row"><label>Check-out</label><div class="v">${fmtDate(b.checkout)}</div></div>
+      <div class="detail-row"><label>Tổng tiền</label><div class="v">${fmtVND(b.amount)} ₫</div></div>
+      <div class="detail-row"><label>Số đêm</label><div class="v">${Math.max(1, Math.round((new Date(b.checkout) - new Date(b.checkin)) / 86400000))}</div></div>
+    </div>
+    ${b.notes ? `<div style="margin-top:14px; padding:12px; background:#fafbfc; border-radius:8px; font-size:13px"><strong>Ghi chú:</strong> ${b.notes}</div>` : ''}
+  `;
+
+  const foot = document.getElementById('bookingDetailFoot');
+  let actions = `<button class="btn" data-close>Đóng</button>`;
+  if (b.status === 'pending') actions += `<button class="btn btn-primary" data-action="booking-status" data-id="${b.id}" data-status="confirmed">Xác nhận</button>`;
+  else if (b.status === 'confirmed') actions += `<button class="btn btn-primary" data-action="booking-status" data-id="${b.id}" data-status="checked_in">Check-in</button>`;
+  else if (b.status === 'checked_in') actions += `<button class="btn btn-primary" data-action="booking-status" data-id="${b.id}" data-status="checked_out">Check-out</button>`;
+  actions += `<button class="btn" data-action="edit-booking" data-id="${b.id}">Sửa</button>`;
+  foot.innerHTML = actions;
+  openModal('bookingDetailModal');
+}
+
+function openBookingForm(id) {
+  const form = document.getElementById('bookingForm');
+  form.reset();
+  const title = document.getElementById('bookingModalTitle');
+  const sel = document.getElementById('bookingCustomerSelect');
+  sel.innerHTML = STATE.customers.map(c => `<option value="${c.id}">${c.name} · ${c.phone}</option>`).join('');
+  const rsel = document.getElementById('bookingRoomSelect');
+  rsel.innerHTML = STATE.rooms
+    .filter(r => r.status !== 'maintenance')
+    .map(r => `<option value="${r.number}">Phòng ${r.number} · ${r.type} · ${fmtVND(r.price)}/đêm</option>`)
+    .join('');
+
+  if (id) {
+    const b = STATE.bookings.find(x => x.id === id);
+    if (b) {
+      title.textContent = `Sửa booking #${b.id}`;
+      form.elements.id.value = b.id;
+      form.elements.customerId.value = b.customerId;
+      form.elements.checkin.value = b.checkin;
+      form.elements.checkout.value = b.checkout;
+      form.elements.room.value = b.rooms.split(',')[0].trim();
+      form.elements.quantity.value = b.rooms.split(',').length;
+      form.elements.notes.value = b.notes || '';
+    }
+  } else {
+    title.textContent = 'Tạo booking mới';
+    form.elements.checkin.value = TODAY;
+    const tomorrow = new Date(TODAY); tomorrow.setDate(tomorrow.getDate() + 1);
+    form.elements.checkout.value = tomorrow.toISOString().slice(0, 10);
+  }
+  closeModal('bookingDetailModal');
+  openModal('bookingModal');
+}
+
+function submitBookingForm() {
+  const form = document.getElementById('bookingForm');
+  if (!form.checkValidity()) { form.reportValidity(); return; }
+  const data = Object.fromEntries(new FormData(form));
+  const customer = STATE.customers.find(c => c.id === +data.customerId);
+  const room = STATE.rooms.find(r => r.number === data.room);
+  if (!customer || !room) { toast('Dữ liệu không hợp lệ', 'error'); return; }
+
+  const nights = Math.max(1, Math.round((new Date(data.checkout) - new Date(data.checkin)) / 86400000));
+  const amount = nights * room.price * Math.max(1, +data.quantity);
+
+  if (data.id) {
+    const b = STATE.bookings.find(x => x.id === data.id);
+    if (b) {
+      Object.assign(b, {
+        customerId: customer.id, customer: customer.name,
+        checkin: data.checkin, checkout: data.checkout,
+        rooms: data.room, amount, notes: data.notes || ''
+      });
+      toast(`Đã cập nhật booking #${b.id}`, 'success');
+    }
+  } else {
+    const newId = 'BK-' + (STATE.counters.booking++);
+    STATE.bookings.unshift({
+      id: newId, customerId: customer.id, customer: customer.name,
+      checkin: data.checkin, checkout: data.checkout,
+      rooms: data.room, status: 'pending', payment: 'unpaid',
+      amount, notes: data.notes || ''
+    });
+    pushNotif(`Booking mới #${newId}`, `${customer.name} · ${fmtVND(amount)} ₫`, '📅');
+    toast(`Đã tạo booking #${newId}`, 'success');
+  }
+  saveState();
+  closeModal('bookingModal');
+  renderAll();
+}
+
+function changeBookingStatus(id, newStatus) {
+  const b = STATE.bookings.find(x => x.id === id);
+  if (!b) return;
+  b.status = newStatus;
+  if (newStatus === 'checked_in') {
+    // mark rooms occupied
+    b.rooms.split(',').forEach(num => {
+      const r = STATE.rooms.find(rm => rm.number === num.trim());
+      if (r) r.status = 'occupied';
+    });
+  } else if (newStatus === 'checked_out') {
+    b.payment = 'paid';
+    b.rooms.split(',').forEach(num => {
+      const r = STATE.rooms.find(rm => rm.number === num.trim());
+      if (r) r.status = 'available';
+    });
+    // update customer total
+    const c = STATE.customers.find(c => c.id === b.customerId);
+    if (c) {
+      c.totalPaid += b.amount;
+      c.tier = tierForSpend(c.totalPaid);
+    }
+  }
+  saveState();
+  toast(`Đã chuyển booking #${id} → ${statusMap[newStatus].label}`, 'success');
+  closeModal('bookingDetailModal');
+  renderAll();
+}
+
+function cancelBooking(id) {
+  confirm2(`Huỷ booking <strong>#${id}</strong>? Hành động này không thể hoàn tác.`, () => {
+    const b = STATE.bookings.find(x => x.id === id);
+    if (!b) return;
+    b.status = 'cancelled';
+    b.payment = b.payment === 'paid' ? 'refunded' : b.payment;
+    b.amount = 0;
+    saveState();
+    toast(`Đã huỷ booking #${id}`, 'warning');
+    renderAll();
+  }, 'Huỷ booking', 'Huỷ booking');
+}
+
+function deleteBooking(id) {
+  confirm2(`Xoá vĩnh viễn booking <strong>#${id}</strong>?`, () => {
+    STATE.bookings = STATE.bookings.filter(x => x.id !== id);
+    saveState();
+    toast(`Đã xoá booking #${id}`, 'success');
+    renderAll();
+  }, 'Xoá booking', 'Xoá');
+}
+
+/* ---------- RENDER: ROOMS ---------- */
+function filteredRooms() {
+  const f = filters.rooms;
+  let list = STATE.rooms;
+  if (f.status !== 'all') list = list.filter(r => r.status === f.status);
+  if (f.type !== 'all') list = list.filter(r => r.type === f.type);
+  return list;
+}
+
+function renderRoomGrid() {
+  const el = document.getElementById('roomGrid');
+  const list = filteredRooms();
+  el.innerHTML = list.length === 0
+    ? `<div style="grid-column:1/-1; text-align:center; padding:40px; color:var(--text-muted)">Không có phòng nào</div>`
+    : list.map(r => {
+      const label = r.status === 'available' ? 'Trống' : r.status === 'occupied' ? 'Đang ở' : 'Bảo trì';
+      const color = r.status === 'available' ? '#10b981' : r.status === 'occupied' ? '#f59e0b' : '#dc2626';
+      return `<div class="room-tile ${r.status}" data-action="edit-room" data-room="${r.number}">
+        <div class="room-no">${r.number}</div>
+        <div class="room-meta">${r.type} · ${r.capacity}</div>
+        <div class="room-meta">${fmtVND(r.price)}/đêm</div>
+        <div class="room-status" style="color:${color}"><span class="dot" style="background:${color}"></span>${label}</div>
+      </div>`;
+    }).join('');
+}
+
+function renderRoomList() {
+  const tbody = document.getElementById('roomListTbody');
+  const list = filteredRooms();
+  tbody.innerHTML = list.length === 0
+    ? `<tr class="empty-row"><td colspan="8">Không có phòng nào</td></tr>`
+    : list.map(r => {
+      const label = r.status === 'available' ? 'Trống' : r.status === 'occupied' ? 'Đang ở' : 'Bảo trì';
+      const cls = r.status === 'available' ? 'b-success' : r.status === 'occupied' ? 'b-warning' : 'b-danger';
+      return `<tr>
+        <td class="strong">${r.number}</td>
+        <td>${r.type}</td>
+        <td>${r.capacity}</td>
+        <td>${r.area}</td>
+        <td>${r.smoking ? 'Có' : 'Không'}</td>
+        <td class="num right strong">${fmtVND(r.price)}</td>
+        <td><span class="badge ${cls}">${label}</span></td>
+        <td><button class="btn btn-sm btn-ghost" data-action="edit-room" data-room="${r.number}">Sửa</button></td>
+      </tr>`;
+    }).join('');
+}
+
+function renderRoomStatusFilters() {
+  const el = document.getElementById('roomStatusFilters');
+  const f = filters.rooms;
+  const counts = {
+    all: STATE.rooms.length,
+    available: STATE.rooms.filter(r => r.status === 'available').length,
+    occupied: STATE.rooms.filter(r => r.status === 'occupied').length,
+    maintenance: STATE.rooms.filter(r => r.status === 'maintenance').length,
+  };
+  el.innerHTML = `
+    <span class="small muted">Trạng thái:</span>
+    <button class="chip ${f.status === 'all' ? 'active' : ''}" data-rstatus="all">Tất cả · ${counts.all}</button>
+    <button class="chip ${f.status === 'available' ? 'active' : ''}" data-rstatus="available"><span class="dot" style="background:#10b981"></span> Trống · ${counts.available}</button>
+    <button class="chip ${f.status === 'occupied' ? 'active' : ''}" data-rstatus="occupied"><span class="dot" style="background:#f59e0b"></span> Đang ở · ${counts.occupied}</button>
+    <button class="chip ${f.status === 'maintenance' ? 'active' : ''}" data-rstatus="maintenance"><span class="dot" style="background:#dc2626"></span> Bảo trì · ${counts.maintenance}</button>
+  `;
+}
+
+function openRoomForm(number) {
+  const form = document.getElementById('roomForm');
+  form.reset();
+  const title = document.getElementById('roomModalTitle');
+  const delBtn = document.getElementById('roomDeleteBtn');
+  if (number) {
+    const r = STATE.rooms.find(x => x.number === number);
+    if (!r) return;
+    title.textContent = `Sửa phòng ${number}`;
+    form.elements.number_old.value = number;
+    form.elements.number.value = r.number;
+    form.elements.type.value = r.type;
+    form.elements.price.value = r.price;
+    form.elements.capacity.value = r.capacity;
+    form.elements.area.value = r.area;
+    form.elements.smoking.value = String(r.smoking);
+    form.elements.status.value = r.status;
+    delBtn.style.display = '';
+    delBtn.onclick = () => {
+      confirm2(`Xoá phòng <strong>${number}</strong>?`, () => {
+        STATE.rooms = STATE.rooms.filter(x => x.number !== number);
+        saveState(); closeModal('roomModal'); renderAll();
+        toast(`Đã xoá phòng ${number}`, 'success');
+      }, 'Xoá phòng', 'Xoá');
+    };
+  } else {
+    title.textContent = 'Thêm phòng';
+    delBtn.style.display = 'none';
+  }
+  openModal('roomModal');
+}
+
+function submitRoomForm() {
+  const form = document.getElementById('roomForm');
+  if (!form.checkValidity()) { form.reportValidity(); return; }
+  const data = Object.fromEntries(new FormData(form));
+  const payload = {
+    number: data.number.trim(),
+    type: data.type, price: +data.price,
+    capacity: data.capacity, area: data.area || '—',
+    smoking: data.smoking === 'true', status: data.status,
+  };
+
+  if (data.number_old) {
+    const idx = STATE.rooms.findIndex(x => x.number === data.number_old);
+    if (idx >= 0) {
+      // prevent dup number
+      if (payload.number !== data.number_old && STATE.rooms.some(r => r.number === payload.number)) {
+        toast('Số phòng đã tồn tại', 'error'); return;
+      }
+      STATE.rooms[idx] = payload;
+      toast(`Đã cập nhật phòng ${payload.number}`, 'success');
+    }
+  } else {
+    if (STATE.rooms.some(r => r.number === payload.number)) {
+      toast('Số phòng đã tồn tại', 'error'); return;
+    }
+    STATE.rooms.push(payload);
+    toast(`Đã thêm phòng ${payload.number}`, 'success');
+  }
+  saveState();
+  closeModal('roomModal');
+  renderAll();
+}
+
+function renderPriceLogs() {
+  const tbody = document.getElementById('priceLogTbody');
+  tbody.innerHTML = STATE.priceLogs.length === 0
+    ? `<tr class="empty-row"><td colspan="5">Chưa có lịch sử giá</td></tr>`
+    : STATE.priceLogs.map(p => {
+      const r = STATE.rooms.find(x => x.number === p.roomNumber);
+      return `<tr>
+        <td>${p.id}</td>
+        <td class="strong">${p.roomNumber} · ${r ? r.type : '—'}</td>
+        <td>${fmtDate(p.from)}</td>
+        <td>${p.to ? fmtDate(p.to) : '—'}</td>
+        <td class="num right strong">${fmtVND(p.price)}</td>
+      </tr>`;
+    }).join('');
+}
+
+function openPriceForm() {
+  const form = document.getElementById('priceForm');
+  form.reset();
+  const sel = document.getElementById('priceRoomSelect');
+  sel.innerHTML = STATE.rooms.map(r => `<option value="${r.number}">${r.number} · ${r.type}</option>`).join('');
+  form.elements.from.value = TODAY;
+  openModal('priceModal');
+}
+
+function submitPriceForm() {
+  const form = document.getElementById('priceForm');
+  if (!form.checkValidity()) { form.reportValidity(); return; }
+  const d = Object.fromEntries(new FormData(form));
+  STATE.priceLogs.push({
+    id: STATE.counters.price++, roomNumber: d.roomNumber,
+    from: d.from, to: d.to || null, price: +d.price
+  });
+  // also update room price if this is current
+  const r = STATE.rooms.find(x => x.number === d.roomNumber);
+  if (r && (!d.to || d.to >= TODAY)) r.price = +d.price;
+  saveState();
+  closeModal('priceModal');
+  renderAll();
+  toast(`Đã áp giá mới cho phòng ${d.roomNumber}`, 'success');
+}
+
+/* ---------- RENDER: CUSTOMERS ---------- */
+function renderCustomers() {
+  const tbody = document.getElementById('customersTbody');
+  const f = filters.customers;
+  let list = [...STATE.customers];
+  if (f.tier !== 'all') list = list.filter(c => c.tier === f.tier);
+  if (f.search) {
+    const q = f.search.toLowerCase();
+    list = list.filter(c =>
+      c.name.toLowerCase().includes(q) ||
+      c.phone.includes(q) ||
+      (c.email || '').toLowerCase().includes(q)
+    );
+  }
+  if (f.sort === 'new') list.sort((a, b) => b.id - a.id);
+  else if (f.sort === 'old') list.sort((a, b) => a.id - b.id);
+  else if (f.sort === 'top') list.sort((a, b) => b.totalPaid - a.totalPaid);
+
+  tbody.innerHTML = list.length === 0
+    ? `<tr class="empty-row"><td colspan="8">Không có khách hàng nào</td></tr>`
+    : list.map(c => `
+      <tr>
+        <td class="strong">${c.name}</td>
+        <td>${c.sex}</td>
+        <td>${c.phone}</td>
+        <td class="muted">${c.email || '—'}</td>
+        <td>${fmtDate(c.dob)}</td>
+        <td><span class="badge ${tierMap[c.tier]}">${c.tier}</span></td>
+        <td class="num right strong">${fmtVND(c.totalPaid)}</td>
+        <td>
+          <div class="dropdown">
+            <button class="btn btn-sm btn-ghost" data-toggle-menu>⋯</button>
+            <div class="dropdown-menu" style="right:0">
+              <button class="dropdown-item" data-action="view-customer" data-id="${c.id}">👁  Hồ sơ</button>
+              <button class="dropdown-item" data-action="edit-customer" data-id="${c.id}">✎  Sửa</button>
+              <button class="dropdown-item" data-action="new-booking-for" data-id="${c.id}">📅  Tạo booking</button>
+              <div class="dropdown-divider"></div>
+              <button class="dropdown-item danger" data-action="delete-customer" data-id="${c.id}">🗑  Xoá</button>
+            </div>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+
+  // KPIs
+  document.getElementById('kpiCustTotal').textContent = STATE.customers.length;
+  document.getElementById('kpiCustDiamond').textContent = STATE.customers.filter(c => c.tier === 'Diamond').length;
+  document.getElementById('kpiCustGold').textContent = STATE.customers.filter(c => c.tier === 'Gold').length;
+  document.getElementById('kpiCustSilver').textContent = STATE.customers.filter(c => c.tier === 'Silver').length;
+}
+
+function openCustomerForm(id) {
+  const form = document.getElementById('customerForm');
+  form.reset();
+  const title = document.getElementById('customerModalTitle');
+  if (id) {
+    const c = STATE.customers.find(x => x.id === +id);
+    if (!c) return;
+    title.textContent = `Sửa khách hàng — ${c.name}`;
+    form.elements.id.value = c.id;
+    form.elements.name.value = c.name;
+    form.elements.sex.value = c.sex;
+    form.elements.dob.value = c.dob;
+    form.elements.phone.value = c.phone;
+    form.elements.email.value = c.email || '';
+    form.elements.notes.value = c.notes || '';
+  } else {
+    title.textContent = 'Thêm khách hàng';
+  }
+  openModal('customerModal');
+}
+
+function submitCustomerForm() {
+  const form = document.getElementById('customerForm');
+  if (!form.checkValidity()) { form.reportValidity(); return; }
+  const d = Object.fromEntries(new FormData(form));
+  if (d.id) {
+    const c = STATE.customers.find(x => x.id === +d.id);
+    if (c) {
+      Object.assign(c, { name: d.name, sex: d.sex, dob: d.dob, phone: d.phone, email: d.email, notes: d.notes });
+      toast(`Đã cập nhật khách hàng`, 'success');
+    }
+  } else {
+    const id = STATE.counters.customer++;
+    STATE.customers.push({
+      id, name: d.name, sex: d.sex, dob: d.dob, phone: d.phone,
+      email: d.email, tier: 'Silver', totalPaid: 0, notes: d.notes || ''
+    });
+    toast(`Đã thêm khách hàng: ${d.name}`, 'success');
+  }
+  saveState();
+  closeModal('customerModal');
+  renderAll();
+}
+
+function openCustomerDetail(id) {
+  const c = STATE.customers.find(x => x.id === +id);
+  if (!c) return;
+  const bookings = STATE.bookings.filter(b => b.customerId === c.id);
+  const payments = STATE.payments.filter(p => bookings.some(b => b.id === p.bookingId));
+  const body = document.getElementById('customerDetailBody');
+  body.innerHTML = `
+    <div style="display:flex; align-items:center; gap:14px; margin-bottom:18px">
+      <div style="width:50px; height:50px; border-radius:50%; background:linear-gradient(135deg,#2563eb,#7c3aed); color:white; display:flex; align-items:center; justify-content:center; font-weight:600; font-size:18px">
+        ${c.name.split(' ').slice(-2).map(w=>w[0]).join('').toUpperCase()}
+      </div>
+      <div>
+        <div style="font-size:18px; font-weight:700">${c.name}</div>
+        <div class="small muted">${c.phone} · ${c.email || '—'}</div>
+      </div>
+      <div style="margin-left:auto"><span class="badge ${tierMap[c.tier]}" style="font-size:12px; padding:4px 10px">${c.tier}</span></div>
+    </div>
+    <div class="detail-grid" style="margin-bottom:18px">
+      <div class="detail-row"><label>Tổng chi tiêu</label><div class="v">${fmtVND(c.totalPaid)} ₫</div></div>
+      <div class="detail-row"><label>Số lần đặt</label><div class="v">${bookings.length}</div></div>
+      <div class="detail-row"><label>Giới tính</label><div class="v">${c.sex}</div></div>
+      <div class="detail-row"><label>Ngày sinh</label><div class="v">${fmtDate(c.dob)}</div></div>
+    </div>
+    <h4 style="margin:16px 0 8px; font-size:13px">Lịch sử booking (${bookings.length})</h4>
+    <div class="card" style="margin-bottom:14px">
+      <table>
+        <thead><tr><th>Mã</th><th>Check-in</th><th>Check-out</th><th>Trạng thái</th><th class="right">Tiền</th></tr></thead>
+        <tbody>
+          ${bookings.length === 0 ? `<tr class="empty-row"><td colspan="5">Chưa có booking</td></tr>` : bookings.map(b => `
+            <tr><td class="strong">#${b.id}</td><td>${fmtDate(b.checkin)}</td><td>${fmtDate(b.checkout)}</td>
+            <td><span class="badge ${statusMap[b.status].cls}">${statusMap[b.status].label}</span></td>
+            <td class="num right">${fmtVND(b.amount)}</td></tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+    ${c.notes ? `<div style="padding:12px; background:#fafbfc; border-radius:8px; font-size:13px"><strong>Ghi chú:</strong> ${c.notes}</div>` : ''}
+  `;
+  openModal('customerDetailModal');
+}
+
+function deleteCustomer(id) {
+  const c = STATE.customers.find(x => x.id === +id);
+  if (!c) return;
+  const hasBookings = STATE.bookings.some(b => b.customerId === c.id);
+  if (hasBookings) {
+    toast('Không thể xoá: khách có booking. Hãy xoá các booking trước.', 'error');
+    return;
+  }
+  confirm2(`Xoá khách hàng <strong>${c.name}</strong>?`, () => {
+    STATE.customers = STATE.customers.filter(x => x.id !== +id);
+    saveState(); renderAll();
+    toast(`Đã xoá khách hàng`, 'success');
+  }, 'Xoá khách hàng', 'Xoá');
+}
+
+/* ---------- RENDER: SERVICES ---------- */
+function renderServiceCatFilters() {
+  const cats = ['all', 'Ăn uống', 'Spa & Wellness', 'Giặt là', 'Đưa đón', 'Khác'];
+  const labels = { all: 'Tất cả' };
+  document.getElementById('serviceCatFilters').innerHTML = cats.map(c => `
+    <button class="chip ${filters.services.catalog === c ? 'active' : ''}" data-cat="${c}">${labels[c] || c}</button>
+  `).join('');
+}
+
+function renderServices() {
+  const tbody = document.getElementById('servicesTbody');
+  const f = filters.services;
+  let list = STATE.services;
+  if (f.catalog !== 'all') list = list.filter(s => s.catalog === f.catalog);
+
+  tbody.innerHTML = list.length === 0
+    ? `<tr class="empty-row"><td colspan="6">Không có dịch vụ nào</td></tr>`
+    : list.map(s => `
+      <tr>
+        <td>${s.id}</td>
+        <td class="strong">${s.name}</td>
+        <td><span class="badge">${s.catalog}</span></td>
+        <td class="num right strong">${fmtVND(s.price)}</td>
+        <td class="num right">${s.used}</td>
+        <td><button class="btn btn-sm btn-ghost" data-action="edit-service" data-id="${s.id}">Sửa</button></td>
+      </tr>
+    `).join('');
+}
+
+function openServiceForm(id) {
+  const form = document.getElementById('serviceForm');
+  form.reset();
+  const title = document.getElementById('serviceModalTitle');
+  const delBtn = document.getElementById('serviceDeleteBtn');
+  if (id) {
+    const s = STATE.services.find(x => x.id === +id);
+    if (!s) return;
+    title.textContent = `Sửa dịch vụ`;
+    form.elements.id.value = s.id;
+    form.elements.name.value = s.name;
+    form.elements.catalog.value = s.catalog;
+    form.elements.price.value = s.price;
+    delBtn.style.display = '';
+    delBtn.onclick = () => {
+      confirm2(`Xoá dịch vụ <strong>${s.name}</strong>?`, () => {
+        STATE.services = STATE.services.filter(x => x.id !== +id);
+        saveState(); closeModal('serviceModal'); renderAll();
+        toast('Đã xoá dịch vụ', 'success');
+      }, 'Xoá dịch vụ', 'Xoá');
+    };
+  } else {
+    title.textContent = 'Thêm dịch vụ';
+    delBtn.style.display = 'none';
+  }
+  openModal('serviceModal');
+}
+
+function submitServiceForm() {
+  const form = document.getElementById('serviceForm');
+  if (!form.checkValidity()) { form.reportValidity(); return; }
+  const d = Object.fromEntries(new FormData(form));
+  if (d.id) {
+    const s = STATE.services.find(x => x.id === +d.id);
+    if (s) { Object.assign(s, { name: d.name, catalog: d.catalog, price: +d.price }); }
+    toast('Đã cập nhật dịch vụ', 'success');
+  } else {
+    STATE.services.push({ id: STATE.counters.service++, name: d.name, catalog: d.catalog, price: +d.price, used: 0 });
+    toast('Đã thêm dịch vụ', 'success');
+  }
+  saveState();
+  closeModal('serviceModal');
+  renderAll();
+}
+
+/* ---------- RENDER: EMPLOYEES ---------- */
+function renderEmployees() {
+  const tbody = document.getElementById('employeesTbody');
+  const f = filters.employees;
+  let list = STATE.employees;
+  if (f.position !== 'all') list = list.filter(e => e.position === f.position);
+  if (f.working === 'working') list = list.filter(e => e.working);
+  else if (f.working === 'left') list = list.filter(e => !e.working);
+  if (f.search) {
+    const q = f.search.toLowerCase();
+    list = list.filter(e => e.name.toLowerCase().includes(q) || e.phone.includes(q));
+  }
+
+  tbody.innerHTML = list.length === 0
+    ? `<tr class="empty-row"><td colspan="8">Không có nhân viên nào</td></tr>`
+    : list.map(e => `
+      <tr>
+        <td class="strong">${e.id}</td>
+        <td>${e.name}</td>
+        <td>${fmtDate(e.dob)}</td>
+        <td>${e.phone}</td>
+        <td><span class="badge">${e.position}</span></td>
+        <td>${fmtDate(e.start)}</td>
+        <td>${e.working ? '<span class="badge b-success">Đang làm</span>' : '<span class="badge">Đã nghỉ</span>'}</td>
+        <td><button class="btn btn-sm btn-ghost" data-action="edit-employee" data-id="${e.id}">Hồ sơ</button></td>
+      </tr>
+    `).join('');
+}
+
+function openEmployeeForm(id) {
+  const form = document.getElementById('employeeForm');
+  form.reset();
+  const title = document.getElementById('employeeModalTitle');
+  const delBtn = document.getElementById('employeeDeleteBtn');
+  if (id) {
+    const e = STATE.employees.find(x => x.id === id);
+    if (!e) return;
+    title.textContent = `Hồ sơ — ${e.name}`;
+    form.elements.id.value = e.id;
+    form.elements.name.value = e.name;
+    form.elements.dob.value = e.dob;
+    form.elements.phone.value = e.phone;
+    form.elements.position.value = e.position;
+    form.elements.start.value = e.start;
+    form.elements.working.value = String(e.working);
+    delBtn.style.display = '';
+    delBtn.onclick = () => {
+      confirm2(`Xoá nhân viên <strong>${e.name}</strong>?`, () => {
+        STATE.employees = STATE.employees.filter(x => x.id !== id);
+        saveState(); closeModal('employeeModal'); renderAll();
+        toast('Đã xoá nhân viên', 'success');
+      }, 'Xoá nhân viên', 'Xoá');
+    };
+  } else {
+    title.textContent = 'Thêm nhân viên';
+    delBtn.style.display = 'none';
+    form.elements.start.value = TODAY;
+  }
+  openModal('employeeModal');
+}
+
+function submitEmployeeForm() {
+  const form = document.getElementById('employeeForm');
+  if (!form.checkValidity()) { form.reportValidity(); return; }
+  const d = Object.fromEntries(new FormData(form));
+  if (d.id) {
+    const e = STATE.employees.find(x => x.id === d.id);
+    if (e) Object.assign(e, {
+      name: d.name, dob: d.dob, phone: d.phone,
+      position: d.position, start: d.start, working: d.working === 'true'
+    });
+    toast('Đã cập nhật nhân viên', 'success');
+  } else {
+    const id = 'EMP-' + String(STATE.counters.employee++).padStart(3, '0');
+    STATE.employees.push({
+      id, name: d.name, dob: d.dob, phone: d.phone,
+      position: d.position, start: d.start, working: d.working === 'true'
+    });
+    toast('Đã thêm nhân viên', 'success');
+  }
+  saveState();
+  closeModal('employeeModal');
+  renderAll();
+}
+
+/* ---------- RENDER: PAYMENTS ---------- */
+function renderPayments() {
+  const tbody = document.getElementById('paymentsTbody');
+  const f = filters.payments;
+  let list = STATE.payments;
+  if (f.date) list = list.filter(p => p.datetime.startsWith(f.date));
+  if (f.method !== 'all') list = list.filter(p => p.method === f.method);
+  if (f.cashier !== 'all') list = list.filter(p => p.cashier === f.cashier);
+
+  tbody.innerHTML = list.length === 0
+    ? `<tr class="empty-row"><td colspan="8">Không có giao dịch nào</td></tr>`
+    : list.map(p => `
+      <tr>
+        <td class="strong">${p.id}</td>
+        <td>#${p.bookingId}</td>
+        <td>${p.customer}</td>
+        <td><span class="badge">${p.method}</span></td>
+        <td>${p.cashier}</td>
+        <td class="muted">${fmtDateTime(p.datetime)}</td>
+        <td class="num right strong" style="${p.amount < 0 ? 'color:var(--danger)' : ''}">${fmtVND(p.amount)}</td>
+        <td>${p.status === 'refund' ? '<span class="badge b-danger">Hoàn tiền</span>' : '<span class="badge b-success">Thành công</span>'}</td>
+      </tr>
+    `).join('');
+
+  // KPIs
+  const today = STATE.payments.filter(p => p.datetime.startsWith(TODAY) && p.amount > 0);
+  const sum = today.reduce((s, p) => s + p.amount, 0);
+  const byMethod = m => today.filter(p => p.method === m).reduce((s, p) => s + p.amount, 0);
+  const cash = byMethod('Tiền mặt');
+  const card = byMethod('Thẻ') + byMethod('QR');
+  const bank = byMethod('Chuyển khoản');
+  document.getElementById('payKpiToday').textContent = fmtMoneyShort(sum);
+  document.getElementById('payKpiCash').textContent = fmtMoneyShort(cash);
+  document.getElementById('payKpiCard').textContent = fmtMoneyShort(card);
+  document.getElementById('payKpiBank').textContent = fmtMoneyShort(bank);
+  document.getElementById('payKpiCashPct').textContent = sum ? ((cash / sum) * 100).toFixed(1) + '%' : '0%';
+  document.getElementById('payKpiCardPct').textContent = sum ? ((card / sum) * 100).toFixed(1) + '%' : '0%';
+  document.getElementById('payKpiBankPct').textContent = sum ? ((bank / sum) * 100).toFixed(1) + '%' : '0%';
+
+  // cashier options
+  const cashiers = [...new Set(STATE.employees.filter(e => e.position === 'Thu ngân').map(e => e.name))];
+  const sel = document.getElementById('paymentCashierFilter');
+  sel.innerHTML = `<option value="all">Tất cả thu ngân</option>` + cashiers.map(c => `<option value="${c}">${c}</option>`).join('');
+  sel.value = f.cashier;
+}
+
+function openPaymentForm() {
+  const form = document.getElementById('paymentForm');
+  form.reset();
+  const bsel = document.getElementById('paymentBookingSelect');
+  bsel.innerHTML = STATE.bookings
+    .filter(b => b.payment !== 'paid' && b.status !== 'cancelled')
+    .map(b => `<option value="${b.id}">#${b.id} · ${b.customer} · ${fmtVND(b.amount)}</option>`).join('')
+    || `<option value="">Không có booking chưa thanh toán</option>`;
+  const csel = document.getElementById('paymentCashierSelect');
+  csel.innerHTML = STATE.employees
+    .filter(e => e.position === 'Thu ngân' && e.working)
+    .map(e => `<option value="${e.name}">${e.name}</option>`).join('');
+  form.elements.datetime.value = new Date().toISOString().slice(0, 16);
+  openModal('paymentModal');
+}
+
+function submitPaymentForm() {
+  const form = document.getElementById('paymentForm');
+  if (!form.checkValidity()) { form.reportValidity(); return; }
+  const d = Object.fromEntries(new FormData(form));
+  const b = STATE.bookings.find(x => x.id === d.bookingId);
+  if (!b) { toast('Booking không tồn tại', 'error'); return; }
+  const id = 'PAY-' + (STATE.counters.payment++);
+  STATE.payments.unshift({
+    id, bookingId: b.id, customer: b.customer, method: d.method, cashier: d.cashier,
+    datetime: d.datetime || new Date().toISOString().slice(0, 16),
+    amount: +d.amount, status: 'success'
+  });
+  // update booking payment status
+  const totalPaid = STATE.payments.filter(p => p.bookingId === b.id && p.amount > 0).reduce((s, p) => s + p.amount, 0);
+  if (totalPaid >= b.amount) b.payment = 'paid';
+  else if (totalPaid > 0) b.payment = 'partial';
+  saveState();
+  closeModal('paymentModal');
+  renderAll();
+  toast(`Đã ghi nhận thanh toán ${fmtVND(+d.amount)} ₫`, 'success');
+  pushNotif('Thanh toán mới', `${id} — ${fmtVND(+d.amount)} ₫`, '💳');
+}
+
+/* ---------- RENDER: REPORTS ---------- */
+function renderReports() {
+  // Top rooms (computed from bookings)
+  const byRoom = {};
+  STATE.bookings.forEach(b => {
+    if (b.status === 'cancelled') return;
+    b.rooms.split(',').forEach(n => {
+      const num = n.trim();
+      byRoom[num] = byRoom[num] || { count: 0, revenue: 0 };
+      byRoom[num].count++;
+      byRoom[num].revenue += b.amount / b.rooms.split(',').length;
+    });
+  });
+  const top = Object.entries(byRoom)
+    .map(([num, v]) => ({ num, ...v, type: (STATE.rooms.find(r => r.number === num) || {}).type || '—' }))
+    .sort((a, b) => b.revenue - a.revenue)
+    .slice(0, 8);
+  const tbody = document.getElementById('topRoomsTbody');
+  tbody.innerHTML = top.length === 0
+    ? `<tr class="empty-row"><td colspan="4">Chưa có dữ liệu</td></tr>`
+    : top.map(r => `
+      <tr>
+        <td class="strong">${r.num}</td>
+        <td>${r.type}</td>
+        <td class="num right">${r.count}</td>
+        <td class="num right strong">${fmtMoneyShort(r.revenue)} ₫</td>
+      </tr>
+    `).join('');
+}
+
+/* ---------- CHARTS ---------- */
+const chartColors = ['#2563eb', '#7c3aed', '#059669', '#d97706', '#dc2626', '#0891b2'];
+let charts = {};
+
+function makeCharts() {
+  Object.values(charts).forEach(c => c && c.destroy && c.destroy());
+  charts = {};
+
+  const days = parseInt(document.querySelector('#revenuePeriod .chip.active')?.dataset.period || '7');
+  const series = revenueSeries(days);
+  const labels = days === 7 ? ['T2','T3','T4','T5','T6','T7','CN'] : series.map((_, i) => `${i + 1}`);
+
+  charts.revenue = new Chart(document.getElementById('revenueChart'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Phòng', data: series.map(s => s.room), borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,.08)', fill: true, tension: .35, borderWidth: 2, pointRadius: days <= 14 ? 3 : 0 },
+        { label: 'Dịch vụ', data: series.map(s => s.service), borderColor: '#7c3aed', backgroundColor: 'rgba(124,58,237,.06)', fill: true, tension: .35, borderWidth: 2, pointRadius: days <= 14 ? 3 : 0 },
+      ]
+    },
+    options: {
+      maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, boxHeight: 10, usePointStyle: true, padding: 16 } } },
+      scales: { y: { beginAtZero: true, ticks: { callback: v => v + 'M' }, grid: { color: '#f2f4f7' } }, x: { grid: { display: false } } }
+    }
+  });
+
+  const typeCounts = ['Standard', 'Deluxe', 'Suite', 'Family'].map(t => STATE.rooms.filter(r => r.type === t).length);
+  charts.roomType = new Chart(document.getElementById('roomTypeChart'), {
+    type: 'doughnut',
+    data: { labels: ['Standard', 'Deluxe', 'Suite', 'Family'], datasets: [{ data: typeCounts, backgroundColor: chartColors, borderWidth: 0 }] },
+    options: { maintainAspectRatio: false, cutout: '62%', plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, boxHeight: 10, usePointStyle: true, padding: 14 } } } }
+  });
+
+  // Report charts (only if containers exist)
+  const rrEl = document.getElementById('reportRevenue');
+  if (rrEl) {
+    const period = document.getElementById('reportPeriod').value;
+    const daysR = period === 'q1/2026' ? 90 : 23;
+    const dataR = revenueSeries(daysR).map(s => s.room + s.service);
+    charts.reportRevenue = new Chart(rrEl, {
+      type: 'bar',
+      data: { labels: dataR.map((_, i) => `${i + 1}`), datasets: [{ label: 'Doanh thu (triệu ₫)', data: dataR, backgroundColor: '#2563eb', borderRadius: 4 }] },
+      options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { ticks: { callback: v => v + 'M' }, grid: { color: '#f2f4f7' } }, x: { grid: { display: false } } } }
+    });
+    charts.reportBreakdown = new Chart(document.getElementById('reportBreakdown'), {
+      type: 'doughnut',
+      data: { labels: ['Phòng', 'Ăn uống', 'Spa', 'Đưa đón', 'Khác'], datasets: [{ data: [68, 15, 8, 6, 3], backgroundColor: chartColors, borderWidth: 0 }] },
+      options: { maintainAspectRatio: false, cutout: '62%', plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, boxHeight: 10, usePointStyle: true, padding: 14 } } } }
+    });
+    charts.reportOccupancy = new Chart(document.getElementById('reportOccupancy'), {
+      type: 'bar',
+      data: { labels: ['Standard', 'Deluxe', 'Suite', 'Family'], datasets: [{ label: '%', data: [82, 74, 68, 71], backgroundColor: chartColors, borderRadius: 4 }] },
+      options: { indexAxis: 'y', maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { max: 100, ticks: { callback: v => v + '%' }, grid: { color: '#f2f4f7' } }, y: { grid: { display: false } } } }
+    });
+  }
+}
+
+/* ---------- SIDEBAR COUNTS ---------- */
+function renderNavCounts() {
+  document.getElementById('navBookingCount').textContent = STATE.bookings.filter(b => !['cancelled', 'checked_out'].includes(b.status)).length;
+  document.getElementById('navRoomCount').textContent = STATE.rooms.length;
+  document.getElementById('navCustomerCount').textContent = STATE.customers.length;
+  document.getElementById('navServiceCount').textContent = STATE.services.length;
+}
+
+/* ---------- NOTIFICATIONS ---------- */
+function renderNotifs() {
+  const list = document.getElementById('notifList');
+  list.innerHTML = STATE.notifications.map(n => `
+    <div class="notif-item ${n.unread ? 'unread' : ''}" data-notif="${n.id}">
+      <div class="notif-icon">${n.icon}</div>
+      <div>
+        <div class="notif-title">${n.title}</div>
+        <div class="notif-sub">${n.sub} · ${n.time}</div>
+      </div>
+    </div>
+  `).join('');
+  const anyUnread = STATE.notifications.some(n => n.unread);
+  document.getElementById('notifDot').style.display = anyUnread ? '' : 'none';
+}
+function pushNotif(title, sub, icon = '🔔') {
+  STATE.notifications.unshift({ id: Date.now(), title, sub, time: 'Vừa xong', unread: true, icon });
+  STATE.notifications = STATE.notifications.slice(0, 15);
+  saveState();
+  renderNotifs();
+}
+
+/* ---------- GLOBAL SEARCH ---------- */
+function doGlobalSearch(q) {
+  const results = document.getElementById('searchResults');
+  if (!q || q.length < 2) { results.classList.remove('show'); return; }
+  const ql = q.toLowerCase();
+  const bookings = STATE.bookings.filter(b =>
+    b.id.toLowerCase().includes(ql) ||
+    b.customer.toLowerCase().includes(ql)
+  ).slice(0, 4);
+  const customers = STATE.customers.filter(c =>
+    c.name.toLowerCase().includes(ql) || c.phone.includes(ql) || (c.email || '').toLowerCase().includes(ql)
+  ).slice(0, 4);
+  const rooms = STATE.rooms.filter(r => r.number.includes(ql) || r.type.toLowerCase().includes(ql)).slice(0, 4);
+
+  if (!bookings.length && !customers.length && !rooms.length) {
+    results.innerHTML = `<div class="search-empty">Không tìm thấy kết quả cho "${q}"</div>`;
+    results.classList.add('show');
+    return;
+  }
+  let html = '';
+  if (bookings.length) {
+    html += `<div class="search-group"><div class="search-group-label">Booking</div>` +
+      bookings.map(b => `
+        <div class="search-result" data-sr-action="booking" data-id="${b.id}">
+          <div class="sr-icon">📅</div>
+          <div><div class="sr-title">#${b.id} · ${b.customer}</div><div class="sr-sub">${fmtDate(b.checkin)} → ${fmtDate(b.checkout)} · ${fmtVND(b.amount)} ₫</div></div>
+        </div>`).join('') + `</div>`;
+  }
+  if (customers.length) {
+    html += `<div class="search-group"><div class="search-group-label">Khách hàng</div>` +
+      customers.map(c => `
+        <div class="search-result" data-sr-action="customer" data-id="${c.id}">
+          <div class="sr-icon">👤</div>
+          <div><div class="sr-title">${c.name}</div><div class="sr-sub">${c.phone} · ${c.tier} · ${fmtVND(c.totalPaid)} ₫</div></div>
+        </div>`).join('') + `</div>`;
+  }
+  if (rooms.length) {
+    html += `<div class="search-group"><div class="search-group-label">Phòng</div>` +
+      rooms.map(r => `
+        <div class="search-result" data-sr-action="room" data-id="${r.number}">
+          <div class="sr-icon">🏨</div>
+          <div><div class="sr-title">Phòng ${r.number}</div><div class="sr-sub">${r.type} · ${fmtVND(r.price)}/đêm · ${r.status}</div></div>
+        </div>`).join('') + `</div>`;
+  }
+  results.innerHTML = html;
+  results.classList.add('show');
+}
+
+/* ---------- CSV EXPORT ---------- */
+function toCSV(rows, headers) {
+  const esc = v => {
+    if (v == null) return '';
+    const s = String(v).replace(/"/g, '""');
+    return /[",\n]/.test(s) ? `"${s}"` : s;
+  };
+  const head = headers.map(h => esc(h.label)).join(',');
+  const body = rows.map(r => headers.map(h => esc(typeof h.v === 'function' ? h.v(r) : r[h.key])).join(',')).join('\n');
+  return '\uFEFF' + head + '\n' + body;
+}
+function downloadCSV(name, content) {
+  const blob = new Blob([content], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = name; a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 500);
+}
+function exportBookingsCSV() {
+  const csv = toCSV(STATE.bookings, [
+    { label: 'Mã', key: 'id' }, { label: 'Khách', key: 'customer' },
+    { label: 'Check-in', key: 'checkin' }, { label: 'Check-out', key: 'checkout' },
+    { label: 'Phòng', key: 'rooms' },
+    { label: 'Trạng thái', v: b => statusMap[b.status].label },
+    { label: 'Thanh toán', v: b => paymentMap[b.payment].label },
+    { label: 'Số tiền', key: 'amount' },
+  ]);
+  downloadCSV(`bookings_${TODAY}.csv`, csv);
+  toast('Đã xuất CSV', 'success');
+}
+function exportCustomersCSV() {
+  const csv = toCSV(STATE.customers, [
+    { label: 'Họ tên', key: 'name' }, { label: 'Giới tính', key: 'sex' },
+    { label: 'SĐT', key: 'phone' }, { label: 'Email', key: 'email' },
+    { label: 'Ngày sinh', key: 'dob' }, { label: 'Hạng', key: 'tier' },
+    { label: 'Tổng chi tiêu', key: 'totalPaid' },
+  ]);
+  downloadCSV(`customers_${TODAY}.csv`, csv);
+  toast('Đã xuất CSV', 'success');
+}
+function exportPaymentsCSV() {
+  const csv = toCSV(STATE.payments, [
+    { label: 'Mã GD', key: 'id' }, { label: 'Booking', key: 'bookingId' },
+    { label: 'Khách', key: 'customer' }, { label: 'Phương thức', key: 'method' },
+    { label: 'Thu ngân', key: 'cashier' }, { label: 'Thời gian', key: 'datetime' },
+    { label: 'Số tiền', key: 'amount' }, { label: 'Trạng thái', key: 'status' },
+  ]);
+  downloadCSV(`payments_${TODAY}.csv`, csv);
+  toast('Đã xuất CSV', 'success');
+}
+function exportAllData() {
+  const json = JSON.stringify(STATE, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `hotel_admin_backup_${TODAY}.json`; a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 500);
+  toast('Đã xuất toàn bộ dữ liệu', 'success');
+}
+
+/* ---------- RENDER ALL ---------- */
+function renderAll() {
+  renderNavCounts();
+  renderDashboard();
+  renderBookingStatusFilters();
+  renderBookings();
+  renderRoomStatusFilters();
+  renderRoomGrid();
+  renderRoomList();
+  renderPriceLogs();
+  renderCustomers();
+  renderServiceCatFilters();
+  renderServices();
+  renderEmployees();
+  renderPayments();
+  renderReports();
+  renderNotifs();
+  makeCharts();
+}
+
+/* ---------- EVENT BINDINGS ---------- */
+
+// Sidebar nav
+document.querySelectorAll('.nav-item[data-page]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.nav-item[data-page]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-' + btn.dataset.page)?.classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+});
+
+function navigateTo(page) {
+  const btn = document.querySelector(`.nav-item[data-page="${page}"]`);
+  if (btn) btn.click();
+}
+
+// Tabs
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    const parent = tab.parentElement;
+    parent.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    const container = parent.parentElement;
+    container.querySelectorAll('.tab-pane').forEach(p => p.style.display = 'none');
+    const target = document.getElementById(tab.dataset.tab);
+    if (target) target.style.display = 'block';
+  });
+});
+
+// "data-tab-go" on buttons (Rooms → go to price tab)
+document.body.addEventListener('click', e => {
+  const t = e.target.closest('[data-tab-go]');
+  if (!t) return;
+  const id = t.dataset.tabGo;
+  const btn = document.querySelector(`.tab[data-tab="${id}"]`);
+  if (btn) btn.click();
+});
+
+// Global action delegation
+document.body.addEventListener('click', e => {
+  const el = e.target.closest('[data-action]');
+  if (!el) return;
+  const action = el.dataset.action;
+  const id = el.dataset.id;
+
+  switch (action) {
+    case 'new-booking': openBookingForm(); break;
+    case 'edit-booking': openBookingForm(id); break;
+    case 'view-booking': openBookingDetail(id); break;
+    case 'cancel-booking': cancelBooking(id); break;
+    case 'delete-booking': deleteBooking(id); break;
+    case 'booking-status': changeBookingStatus(id, el.dataset.status); break;
+
+    case 'new-customer': openCustomerForm(); break;
+    case 'edit-customer': openCustomerForm(id); break;
+    case 'view-customer': openCustomerDetail(id); break;
+    case 'delete-customer': deleteCustomer(id); break;
+    case 'new-booking-for':
+      openBookingForm();
+      setTimeout(() => { document.getElementById('bookingCustomerSelect').value = id; }, 50);
+      break;
+
+    case 'new-room': openRoomForm(); break;
+    case 'edit-room': openRoomForm(el.dataset.room); break;
+    case 'new-price': openPriceForm(); break;
+
+    case 'new-service': openServiceForm(); break;
+    case 'edit-service': openServiceForm(id); break;
+
+    case 'new-employee': openEmployeeForm(); break;
+    case 'edit-employee': openEmployeeForm(id); break;
+
+    case 'new-payment': openPaymentForm(); break;
+
+    case 'open-settings': toast('Trang cài đặt sẽ có trong phiên bản sau', 'info'); break;
+    case 'export-all': exportAllData(); break;
+  }
+});
+
+// "data-nav" shortcuts
+document.body.addEventListener('click', e => {
+  const t = e.target.closest('[data-nav]');
+  if (t) navigateTo(t.dataset.nav);
+});
+
+// Dropdown toggles (row action menus)
+document.body.addEventListener('click', e => {
+  // close others
+  if (!e.target.closest('[data-toggle-menu]') && !e.target.closest('.dropdown-menu')) {
+    document.querySelectorAll('.dropdown-menu.show').forEach(m => m.classList.remove('show'));
+  }
+  const btn = e.target.closest('[data-toggle-menu]');
+  if (btn) {
+    e.stopPropagation();
+    const menu = btn.nextElementSibling;
+    document.querySelectorAll('.dropdown-menu.show').forEach(m => { if (m !== menu) m.classList.remove('show'); });
+    if (menu && menu.classList.contains('dropdown-menu')) menu.classList.toggle('show');
+  }
+});
+
+// Notification menu toggle
+document.getElementById('btnNotifs').addEventListener('click', e => {
+  e.stopPropagation();
+  const m = document.getElementById('notifMenu');
+  document.querySelectorAll('.dropdown-menu.show').forEach(x => { if (x !== m) x.classList.remove('show'); });
+  m.classList.toggle('show');
+});
+// User menu toggle
+document.getElementById('btnUser').addEventListener('click', e => {
+  e.stopPropagation();
+  const m = document.getElementById('userMenu');
+  document.querySelectorAll('.dropdown-menu.show').forEach(x => { if (x !== m) x.classList.remove('show'); });
+  m.classList.toggle('show');
+});
+document.getElementById('btnSettings').addEventListener('click', () => {
+  toast('Trang cài đặt sẽ có trong phiên bản sau', 'info');
+});
+
+// Mark all notifications read
+document.getElementById('btnMarkAllRead').addEventListener('click', () => {
+  STATE.notifications.forEach(n => n.unread = false);
+  saveState(); renderNotifs();
+  toast('Đã đánh dấu tất cả đã đọc', 'success');
+});
+
+// Notif item click
+document.getElementById('notifList').addEventListener('click', e => {
+  const it = e.target.closest('[data-notif]');
+  if (!it) return;
+  const n = STATE.notifications.find(x => x.id == it.dataset.notif);
+  if (n) { n.unread = false; saveState(); renderNotifs(); }
+});
+
+// Dashboard
+document.getElementById('btnDashRefresh').addEventListener('click', () => {
+  renderAll();
+  toast('Đã làm mới dashboard', 'success');
+});
+document.getElementById('btnDashExport').addEventListener('click', exportAllData);
+
+// Revenue period chips
+document.getElementById('revenuePeriod').addEventListener('click', e => {
+  const c = e.target.closest('.chip'); if (!c) return;
+  document.querySelectorAll('#revenuePeriod .chip').forEach(x => x.classList.remove('active'));
+  c.classList.add('active');
+  renderDashboard(); makeCharts();
+});
+
+// Booking filters
+document.getElementById('bookingStatusFilters').addEventListener('click', e => {
+  const c = e.target.closest('[data-bstatus]'); if (!c) return;
+  filters.bookings.status = c.dataset.bstatus;
+  renderBookingStatusFilters(); renderBookings();
+});
+document.getElementById('bookingSearch').addEventListener('input', e => {
+  filters.bookings.search = e.target.value; renderBookings();
+});
+document.getElementById('bookingDateFilter').addEventListener('change', e => {
+  filters.bookings.date = e.target.value; renderBookings();
+});
+document.getElementById('btnClearBookingFilters').addEventListener('click', () => {
+  filters.bookings = { status: 'all', date: '', search: '' };
+  document.getElementById('bookingSearch').value = '';
+  document.getElementById('bookingDateFilter').value = '';
+  renderBookingStatusFilters(); renderBookings();
+});
+document.getElementById('btnExportBookings').addEventListener('click', exportBookingsCSV);
+
+// Booking form
+document.getElementById('bookingFormSubmit').addEventListener('click', submitBookingForm);
+
+// Room filters
+document.getElementById('roomStatusFilters').addEventListener('click', e => {
+  const c = e.target.closest('[data-rstatus]'); if (!c) return;
+  filters.rooms.status = c.dataset.rstatus;
+  renderRoomStatusFilters(); renderRoomGrid(); renderRoomList();
+});
+document.getElementById('roomTypeFilter').addEventListener('change', e => {
+  filters.rooms.type = e.target.value; renderRoomGrid(); renderRoomList();
+});
+// Room form
+document.getElementById('roomFormSubmit').addEventListener('click', submitRoomForm);
+// Price form
+document.getElementById('priceFormSubmit').addEventListener('click', submitPriceForm);
+
+// Customer filters
+document.getElementById('customerSearch').addEventListener('input', e => {
+  filters.customers.search = e.target.value; renderCustomers();
+});
+document.getElementById('customerTierFilter').addEventListener('change', e => {
+  filters.customers.tier = e.target.value; renderCustomers();
+});
+document.getElementById('customerSort').addEventListener('change', e => {
+  filters.customers.sort = e.target.value; renderCustomers();
+});
+document.getElementById('btnExportCustomers').addEventListener('click', exportCustomersCSV);
+document.getElementById('customerFormSubmit').addEventListener('click', submitCustomerForm);
+
+// Service filters
+document.getElementById('serviceCatFilters').addEventListener('click', e => {
+  const c = e.target.closest('[data-cat]'); if (!c) return;
+  filters.services.catalog = c.dataset.cat;
+  renderServiceCatFilters(); renderServices();
+});
+document.getElementById('serviceFormSubmit').addEventListener('click', submitServiceForm);
+
+// Employee filters
+document.getElementById('employeeSearch').addEventListener('input', e => {
+  filters.employees.search = e.target.value; renderEmployees();
+});
+document.getElementById('employeePositionFilter').addEventListener('change', e => {
+  filters.employees.position = e.target.value; renderEmployees();
+});
+document.getElementById('employeeWorkingFilter').addEventListener('change', e => {
+  filters.employees.working = e.target.value; renderEmployees();
+});
+document.getElementById('employeeFormSubmit').addEventListener('click', submitEmployeeForm);
+
+// Payment filters
+document.getElementById('paymentDateFilter').addEventListener('change', e => {
+  filters.payments.date = e.target.value; renderPayments();
+});
+document.getElementById('paymentMethodFilter').addEventListener('change', e => {
+  filters.payments.method = e.target.value; renderPayments();
+});
+document.getElementById('paymentCashierFilter').addEventListener('change', e => {
+  filters.payments.cashier = e.target.value; renderPayments();
+});
+document.getElementById('btnClearPaymentFilters').addEventListener('click', () => {
+  filters.payments = { date: '', method: 'all', cashier: 'all' };
+  document.getElementById('paymentDateFilter').value = '';
+  document.getElementById('paymentMethodFilter').value = 'all';
+  document.getElementById('paymentCashierFilter').value = 'all';
+  renderPayments();
+});
+document.getElementById('btnExportPayments').addEventListener('click', exportPaymentsCSV);
+document.getElementById('paymentFormSubmit').addEventListener('click', submitPaymentForm);
+
+// Reports
+document.getElementById('reportPeriod').addEventListener('change', () => { makeCharts(); renderReports(); toast('Đã cập nhật khoảng thời gian', 'info'); });
+document.getElementById('btnReportExport').addEventListener('click', () => {
+  toast('Đang chuẩn bị file PDF... (demo — cần thư viện jsPDF)', 'info');
+  setTimeout(() => exportAllData(), 600);
+});
+
+// Reset data
+const resetHandler = () => {
+  confirm2('Khôi phục toàn bộ dữ liệu về trạng thái mẫu? Các thay đổi sẽ mất.', resetData, 'Reset dữ liệu', 'Khôi phục');
+};
+document.getElementById('btnResetData').addEventListener('click', resetHandler);
+document.getElementById('btnResetData2').addEventListener('click', resetHandler);
+
+// Global search
+const gs = document.getElementById('globalSearch');
+gs.addEventListener('input', e => doGlobalSearch(e.target.value));
+gs.addEventListener('focus', e => { if (e.target.value.length >= 2) doGlobalSearch(e.target.value); });
+document.addEventListener('click', e => {
+  if (!e.target.closest('.search')) document.getElementById('searchResults').classList.remove('show');
+});
+document.getElementById('searchResults').addEventListener('click', e => {
+  const r = e.target.closest('[data-sr-action]'); if (!r) return;
+  const act = r.dataset.srAction; const id = r.dataset.id;
+  document.getElementById('searchResults').classList.remove('show');
+  gs.value = '';
+  if (act === 'booking') { navigateTo('bookings'); openBookingDetail(id); }
+  else if (act === 'customer') { navigateTo('customers'); openCustomerDetail(id); }
+  else if (act === 'room') { navigateTo('rooms'); setTimeout(() => openRoomForm(id), 100); }
+});
+
+/* ---------- INIT ---------- */
+(async function init() {
+  STATE = await loadStateFromAPI();
+  renderAll();
+  setInterval(renderDashboard, 60000);
+})();
+</script>
+</body>
+</html>
