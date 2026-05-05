@@ -1,16 +1,15 @@
 """
-HotelBooking Admin — Flask REST API
+HotelBooking Admin — FastAPI REST API
 Backend kết nối SQL Server theo schema CLAUDE.md.
 """
-from flask import Flask, jsonify, request, send_from_directory
-from flask_cors import CORS
+from contextlib import asynccontextmanager
+from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse, FileResponse
 import pymssql
 from datetime import date, datetime
 from decimal import Decimal
 import os
-
-app = Flask(__name__)
-CORS(app)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -155,16 +154,45 @@ DELETE_ORDER = [
 ]
 
 
+# ─── App ──────────────────────────────────────────────────────────────────────
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    try:
+        conn = get_db()
+        cur = conn.cursor(as_dict=True)
+        _ensure_extras(cur)
+        _ensure_reference_data(cur)
+        conn.commit()
+        cur.close()
+        conn.close()
+        print("✅  Kết nối SQL Server thành công")
+    except Exception as e:
+        print(f"❌  Lỗi kết nối: {e}")
+        raise
+    print("✅  HotelBooking API → http://127.0.0.1:5001")
+    yield
+
+
+app = FastAPI(lifespan=lifespan)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
 # ─── Routes ───────────────────────────────────────────────────────────────────
 
-@app.route("/")
+@app.get("/")
 def index():
-    return send_from_directory(BASE_DIR, "admin.html")
+    return FileResponse(os.path.join(BASE_DIR, "admin.html"))
 
 
 # ── GET /api/state ────────────────────────────────────────────────────────────
 
-@app.route("/api/state", methods=["GET"])
+@app.get("/api/state")
 def get_state():
     conn = get_db()
     try:
@@ -381,7 +409,7 @@ def get_state():
         counters = {r["name"]: r["value"] for r in cur.fetchall()}
 
         cur.close()
-        return jsonify({
+        return {
             "bookings":      bookings,
             "customers":     customers,
             "rooms":         rooms,
@@ -391,21 +419,21 @@ def get_state():
             "priceLogs":     price_logs,
             "notifications": notifications,
             "counters":      counters,
-        })
+        }
     except Exception as e:
         import traceback; traceback.print_exc()
-        return jsonify({"error": str(e)}), 500
+        return JSONResponse({"error": str(e)}, status_code=500)
     finally:
         conn.close()
 
 
 # ── PUT /api/state ────────────────────────────────────────────────────────────
 
-@app.route("/api/state", methods=["PUT"])
-def save_state():
-    data = request.get_json(force=True)
+@app.put("/api/state")
+async def save_state(request: Request):
+    data = await request.json()
     if not data:
-        return jsonify({"error": "No JSON body"}), 400
+        return JSONResponse({"error": "No JSON body"}, status_code=400)
 
     conn = get_db()
     try:
@@ -577,19 +605,19 @@ def save_state():
 
         conn.commit()
         cur.close()
-        return jsonify({"ok": True})
+        return {"ok": True}
 
     except Exception as e:
         conn.rollback()
         import traceback; traceback.print_exc()
-        return jsonify({"error": str(e)}), 500
+        return JSONResponse({"error": str(e)}, status_code=500)
     finally:
         conn.close()
 
 
 # ── POST /api/state/reset ─────────────────────────────────────────────────────
 
-@app.route("/api/state/reset", methods=["POST"])
+@app.post("/api/state/reset")
 def reset_state():
     conn = get_db()
     try:
@@ -599,10 +627,10 @@ def reset_state():
             cur.execute(f"DELETE FROM {tbl}")
         conn.commit()
         cur.close()
-        return jsonify({"ok": True})
+        return {"ok": True}
     except Exception as e:
         conn.rollback()
-        return jsonify({"error": str(e)}), 500
+        return JSONResponse({"error": str(e)}, status_code=500)
     finally:
         conn.close()
 
@@ -610,18 +638,5 @@ def reset_state():
 # ─── Start ────────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    try:
-        conn = get_db()
-        cur = conn.cursor(as_dict=True)
-        _ensure_extras(cur)
-        _ensure_reference_data(cur)
-        conn.commit()
-        cur.close()
-        conn.close()
-        print("✅  Kết nối SQL Server thành công")
-    except Exception as e:
-        print(f"❌  Lỗi kết nối: {e}")
-        raise
-
-    print("✅  HotelBooking API → http://127.0.0.1:5001")
-    app.run(debug=True, host="0.0.0.0", port=5001)
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=5001)
