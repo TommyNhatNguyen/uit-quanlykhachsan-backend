@@ -1,4 +1,5 @@
-fastapi>=0.110
-fastapi[standard]>=0.110
-uvicorn>=0.29
+fastapi[standard]
+uvicorn
 pymssql
+pydantic
+python-dotenv
