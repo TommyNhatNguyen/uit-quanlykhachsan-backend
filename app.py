@@ -28,7 +28,6 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         print(f"❌  Lỗi kết nối: {e}")
         raise
-    print("✅  HotelBooking API → http://127.0.0.1:5001")
     yield
 
 
@@ -45,9 +44,7 @@ app.add_middleware(
 def index():
     return FileResponse(os.path.join(BASE_DIR, "admin.html"))
 
-
 app.include_router(api_state.router)
-
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=5001)
