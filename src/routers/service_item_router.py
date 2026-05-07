@@ -1,38 +1,36 @@
 from fastapi import APIRouter
 from src.db.db import db
-from src.models.service import CreateServiceItem, UpdateServiceItem
-from src.repositories.service_item_repo import ServiceItemRepository
-from src.services.service_item_service import ServiceItemService
+from src.models.service import CreateService, UpdateService
+from src.repositories.service_item_repo import ServiceRepository
+from src.services.service_item_service import ServiceService
 
-router = APIRouter(prefix="/api/service-items", tags=["service-items"])
+router = APIRouter(prefix="/api/services", tags=["services"])
 
 
-def _svc() -> ServiceItemService:
-    return ServiceItemService(ServiceItemRepository(db))
+def _svc() -> ServiceService:
+    return ServiceService(ServiceRepository(db))
 
 
 @router.get("")
-def get_list_service_items(page: int = 1, page_size: int = 10):
-    return _svc().get_list_service_items(page, page_size)
+def get_list_services(page: int = 1, page_size: int = 10):
+    return _svc().get_list_services(page, page_size)
 
 
-@router.get("/{service_item_id}")
-def get_service_item(service_item_id: int):
-    return _svc().get_service_item(service_item_id)
+@router.get("/{id}")
+def get_service(id: int):
+    return _svc().get_service(id)
 
 
 @router.post("")
-def create_service_item(service_item: CreateServiceItem):
-    return _svc().create_service_item(service_item)
+def create_service(service: CreateService):
+    return _svc().create_service(service)
 
 
-@router.put("/{service_item_id}")
-def update_service_item(service_item_id: int, service_item: UpdateServiceItem):
-    data = service_item.model_dump()
-    data["service_item_id"] = service_item_id
-    return _svc().update_service_item(UpdateServiceItem(**data))
+@router.put("/{id}")
+def update_service(id: int, service: UpdateService):
+    return _svc().update_service(id, service)
 
 
-@router.delete("/{service_item_id}")
-def delete_service_item(service_item_id: int):
-    return _svc().delete_service_item(service_item_id)
+@router.delete("/{id}")
+def delete_service(id: int):
+    return _svc().delete_service(id)

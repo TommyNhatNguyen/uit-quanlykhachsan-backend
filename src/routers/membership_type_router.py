@@ -1,38 +1,36 @@
 from fastapi import APIRouter
 from src.db.db import db
-from src.models.membership import CreateMembershipType, UpdateMembershipType
-from src.repositories.membership_type_repo import MembershipTypeRepository
-from src.services.membership_type_service import MembershipTypeService
+from src.models.membership import CreateMembership, UpdateMembership
+from src.repositories.membership_type_repo import MembershipRepository
+from src.services.membership_type_service import MembershipService
 
-router = APIRouter(prefix="/api/membership-types", tags=["membership-types"])
+router = APIRouter(prefix="/api/memberships", tags=["memberships"])
 
 
-def _svc() -> MembershipTypeService:
-    return MembershipTypeService(MembershipTypeRepository(db))
+def _svc() -> MembershipService:
+    return MembershipService(MembershipRepository(db))
 
 
 @router.get("")
-def get_list_membership_types(page: int = 1, page_size: int = 10):
-    return _svc().get_list_membership_types(page, page_size)
+def get_list_memberships(page: int = 1, page_size: int = 10):
+    return _svc().get_list_memberships(page, page_size)
 
 
-@router.get("/{membership_type_id}")
-def get_membership_type(membership_type_id: int):
-    return _svc().get_membership_type(membership_type_id)
+@router.get("/{id}")
+def get_membership(id: int):
+    return _svc().get_membership(id)
 
 
 @router.post("")
-def create_membership_type(membership_type: CreateMembershipType):
-    return _svc().create_membership_type(membership_type)
+def create_membership(membership: CreateMembership):
+    return _svc().create_membership(membership)
 
 
-@router.put("/{membership_type_id}")
-def update_membership_type(membership_type_id: int, membership_type: UpdateMembershipType):
-    data = membership_type.model_dump()
-    data["membership_type_id"] = membership_type_id
-    return _svc().update_membership_type(UpdateMembershipType(**data))
+@router.put("/{id}")
+def update_membership(id: int, membership: UpdateMembership):
+    return _svc().update_membership(id, membership)
 
 
-@router.delete("/{membership_type_id}")
-def delete_membership_type(membership_type_id: int):
-    return _svc().delete_membership_type(membership_type_id)
+@router.delete("/{id}")
+def delete_membership(id: int):
+    return _svc().delete_membership(id)

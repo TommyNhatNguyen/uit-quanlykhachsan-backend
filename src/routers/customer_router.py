@@ -16,9 +16,9 @@ def get_list_customers(page: int = 1, page_size: int = 10):
     return _svc().get_list_customers(page, page_size)
 
 
-@router.get("/{customer_id}")
-def get_customer(customer_id: int):
-    return _svc().get_customer(customer_id)
+@router.get("/{id}")
+def get_customer(id: int):
+    return _svc().get_customer(id)
 
 
 @router.post("")
@@ -26,13 +26,11 @@ def create_customer(customer: CreateCustomer):
     return _svc().create_customer(customer)
 
 
-@router.put("/{customer_id}")
-def update_customer(customer_id: int, customer: UpdateCustomer):
-    data = customer.model_dump()
-    data["customer_id"] = customer_id
-    return _svc().update_customer(UpdateCustomer(**data))
+@router.put("/{id}")
+def update_customer(id: int, customer: UpdateCustomer):
+    return _svc().update_customer(id, customer)
 
 
-@router.delete("/{customer_id}")
-def delete_customer(customer_id: int):
-    return _svc().delete_customer(customer_id)
+@router.delete("/{id}")
+def delete_customer(id: int):
+    return _svc().delete_customer(id)

@@ -1,10 +1,12 @@
-from ast import List
-from typing import Optional
+from __future__ import annotations
+from typing import Optional, List, TYPE_CHECKING
 from pydantic import BaseModel
 
 from src.models.hotel import Hotel
-from src.models.room_price_log import RoomPriceLog
 from src.models.room_type import RoomType
+
+if TYPE_CHECKING:
+    from src.models.room_price_log import RoomPriceLog
 
 
 class Room(BaseModel):
@@ -27,7 +29,7 @@ class Room(BaseModel):
 class PopulatedRoom(Room):
     room_type: Optional[RoomType] = None
     hotel: Optional[Hotel] = None
-    room_price_logs: Optional[List[RoomPriceLog]] = None
+    room_price_logs: Optional[List["RoomPriceLog"]] = None
 
 
 class CreateRoom(BaseModel):

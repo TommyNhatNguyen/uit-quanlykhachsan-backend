@@ -20,13 +20,12 @@ class CustomerHistoryPurchaseService:
     def create_customer_history_purchase(self, chp: CreateCustomerHistoryPurchase) -> CustomerHistoryPurchase:
         return self.repo.create_customer_history_purchase(chp)
 
-    def update_customer_history_purchase(self, chp: UpdateCustomerHistoryPurchase) -> CustomerHistoryPurchase:
-        current = self.repo.get_customer_history_purchase(chp.id)
+    def update_customer_history_purchase(self, id: int, data: UpdateCustomerHistoryPurchase) -> CustomerHistoryPurchase:
+        current = self.repo.get_customer_history_purchase(id)
         if isinstance(current, JSONResponse):
-            raise HTTPException(status_code=404, detail=f"CustomerHistoryPurchase {chp.id} not found")
-        merged_data = current.model_dump()
-        merged_data.update(chp.model_dump(exclude_none=True))
-        return self.repo.update_customer_history_purchase(UpdateCustomerHistoryPurchase(**merged_data))
+            raise HTTPException(status_code=404, detail=f"CustomerHistoryPurchase {id} not found")
+        merged = {**current.model_dump(), **data.model_dump(exclude_none=True)}
+        return self.repo.update_customer_history_purchase(id, CustomerHistoryPurchase(**merged))
 
     def delete_customer_history_purchase(self, id: int) -> CustomerHistoryPurchase:
         current = self.repo.get_customer_history_purchase(id)

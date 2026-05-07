@@ -1,36 +1,35 @@
 from fastapi import HTTPException
 from fastapi.responses import JSONResponse
-from src.models.service import ServiceItem, CreateServiceItem, UpdateServiceItem
-from src.repositories.service_item_repo import ServiceItemRepository
+from src.models.service import Service, CreateService, UpdateService
+from src.repositories.service_item_repo import ServiceRepository
 
 
-class ServiceItemService:
-    def __init__(self, repo: ServiceItemRepository):
+class ServiceService:
+    def __init__(self, repo: ServiceRepository):
         self.repo = repo
 
-    def get_service_item(self, service_item_id: int) -> ServiceItem:
-        result = self.repo.get_service_item(service_item_id)
+    def get_service(self, id: int) -> Service:
+        result = self.repo.get_service(id)
         if isinstance(result, JSONResponse):
-            raise HTTPException(status_code=404, detail=f"ServiceItem {service_item_id} not found")
+            raise HTTPException(status_code=404, detail=f"Service {id} not found")
         return result
 
-    def get_list_service_items(self, page: int = 1, page_size: int = 10) -> dict:
-        return self.repo.get_list_service_items(page, page_size)
+    def get_list_services(self, page: int = 1, page_size: int = 10) -> dict:
+        return self.repo.get_list_services(page, page_size)
 
-    def create_service_item(self, service_item: CreateServiceItem) -> ServiceItem:
-        return self.repo.create_service_item(service_item)
+    def create_service(self, service: CreateService) -> Service:
+        return self.repo.create_service(service)
 
-    def update_service_item(self, service_item: UpdateServiceItem) -> ServiceItem:
-        current = self.repo.get_service_item(service_item.service_item_id)
+    def update_service(self, id: int, data: UpdateService) -> Service:
+        current = self.repo.get_service(id)
         if isinstance(current, JSONResponse):
-            raise HTTPException(status_code=404, detail=f"ServiceItem {service_item.service_item_id} not found")
-        merged_data = current.model_dump()
-        merged_data.update(service_item.model_dump(exclude_none=True))
-        return self.repo.update_service_item(UpdateServiceItem(**merged_data))
+            raise HTTPException(status_code=404, detail=f"Service {id} not found")
+        merged = {**current.model_dump(), **data.model_dump(exclude_none=True)}
+        return self.repo.update_service(id, Service(**merged))
 
-    def delete_service_item(self, service_item_id: int) -> ServiceItem:
-        current = self.repo.get_service_item(service_item_id)
+    def delete_service(self, id: int) -> Service:
+        current = self.repo.get_service(id)
         if isinstance(current, JSONResponse):
-            raise HTTPException(status_code=404, detail=f"ServiceItem {service_item_id} not found")
-        self.repo.delete_service_item(service_item_id)
+            raise HTTPException(status_code=404, detail=f"Service {id} not found")
+        self.repo.delete_service(id)
         return current

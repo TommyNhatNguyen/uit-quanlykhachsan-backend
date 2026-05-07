@@ -2,6 +2,7 @@ from typing import Optional
 from pydantic import BaseModel
 
 from src.models.customer import PopulatedCustomer
+from src.models.booking import PopulatedBooking
 
 
 class CustomerHistoryPurchase(BaseModel):
@@ -14,8 +15,7 @@ class CustomerHistoryPurchase(BaseModel):
 
 class PopulatedCustomerHistoryPurchase(CustomerHistoryPurchase):
     customer: Optional[PopulatedCustomer] = None
-    # TODO: Add booking
-    # booking: Optional[PopulatedBooking] = None
+    booking: Optional[PopulatedBooking] = None
 
 
 class CreateCustomerHistoryPurchase(BaseModel):

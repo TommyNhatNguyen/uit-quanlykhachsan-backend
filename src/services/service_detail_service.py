@@ -1,36 +1,35 @@
 from fastapi import HTTPException
 from fastapi.responses import JSONResponse
-from src.models.service_detail import ServiceDetail, CreateServiceDetail, UpdateServiceDetail
-from src.repositories.service_detail_repo import ServiceDetailRepository
+from src.models.service_detail import ServicesDetail, CreateServicesDetail, UpdateServicesDetail
+from src.repositories.service_detail_repo import ServicesDetailRepository
 
 
-class ServiceDetailService:
-    def __init__(self, repo: ServiceDetailRepository):
+class ServicesDetailService:
+    def __init__(self, repo: ServicesDetailRepository):
         self.repo = repo
 
-    def get_service_detail(self, service_detail_id: int) -> ServiceDetail:
-        result = self.repo.get_service_detail(service_detail_id)
+    def get_services_detail(self, id: int) -> ServicesDetail:
+        result = self.repo.get_services_detail(id)
         if isinstance(result, JSONResponse):
-            raise HTTPException(status_code=404, detail=f"ServiceDetail {service_detail_id} not found")
+            raise HTTPException(status_code=404, detail=f"ServicesDetail {id} not found")
         return result
 
-    def get_list_service_details(self, page: int = 1, page_size: int = 10) -> dict:
-        return self.repo.get_list_service_details(page, page_size)
+    def get_list_services_details(self, page: int = 1, page_size: int = 10) -> dict:
+        return self.repo.get_list_services_details(page, page_size)
 
-    def create_service_detail(self, service_detail: CreateServiceDetail) -> ServiceDetail:
-        return self.repo.create_service_detail(service_detail)
+    def create_services_detail(self, detail: CreateServicesDetail) -> ServicesDetail:
+        return self.repo.create_services_detail(detail)
 
-    def update_service_detail(self, service_detail: UpdateServiceDetail) -> ServiceDetail:
-        current = self.repo.get_service_detail(service_detail.service_detail)
+    def update_services_detail(self, id: int, data: UpdateServicesDetail) -> ServicesDetail:
+        current = self.repo.get_services_detail(id)
         if isinstance(current, JSONResponse):
-            raise HTTPException(status_code=404, detail=f"ServiceDetail {service_detail.service_detail} not found")
-        merged_data = current.model_dump()
-        merged_data.update(service_detail.model_dump(exclude_none=True))
-        return self.repo.update_service_detail(UpdateServiceDetail(**merged_data))
+            raise HTTPException(status_code=404, detail=f"ServicesDetail {id} not found")
+        merged = {**current.model_dump(), **data.model_dump(exclude_none=True)}
+        return self.repo.update_services_detail(id, ServicesDetail(**merged))
 
-    def delete_service_detail(self, service_detail_id: int) -> ServiceDetail:
-        current = self.repo.get_service_detail(service_detail_id)
+    def delete_services_detail(self, id: int) -> ServicesDetail:
+        current = self.repo.get_services_detail(id)
         if isinstance(current, JSONResponse):
-            raise HTTPException(status_code=404, detail=f"ServiceDetail {service_detail_id} not found")
-        self.repo.delete_service_detail(service_detail_id)
+            raise HTTPException(status_code=404, detail=f"ServicesDetail {id} not found")
+        self.repo.delete_services_detail(id)
         return current

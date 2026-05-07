@@ -1,16 +1,18 @@
 from typing import Optional, List
 from datetime import datetime
-from enum import Enum
 from pydantic import BaseModel
 
 from src.models.customer import PopulatedCustomer
-from src.models.booking_detail import CreateBookingDetail, PopulatedBookingDetail, UpdateBookingDetail
+from src.models.booking_detail import (
+    BookingStatus,
+    PopulatedBookingDetail,
+    CreateBookingDetail,
+    UpdateBookingDetail,
+)
 
-class BookingStatus(str, Enum):
-    BOOKED = "BOOKED"
-    CANCELED = "CANCELED"
-    CHECKIN = "CHECKIN"
-    CHECKOUT = "CHECKOUT"
+# Re-export BookingStatus so existing code importing it from here still works
+__all__ = ["BookingStatus", "Booking", "PopulatedBooking", "CreateBooking",
+           "CreateBookingWithManyDetails", "UpdateBooking", "UpdateBookingWithManyDetails"]
 
 
 class Booking(BaseModel):
@@ -33,6 +35,7 @@ class CreateBooking(BaseModel):
     is_fully_paid: Optional[bool] = False
     created_at: datetime = datetime.now()
 
+
 class CreateBookingWithManyDetails(BaseModel):
     customer_id: int
     notes: Optional[str] = None
@@ -40,12 +43,14 @@ class CreateBookingWithManyDetails(BaseModel):
     booking_details: List[CreateBookingDetail]
     created_at: datetime = datetime.now()
 
+
 class UpdateBooking(BaseModel):
     customer_id: Optional[int] = None
     created_at: Optional[datetime] = None
     notes: Optional[str] = None
     is_fully_paid: Optional[bool] = None
     is_deleted: Optional[bool] = None
+
 
 class UpdateBookingWithManyDetails(BaseModel):
     customer_id: Optional[int] = None

@@ -16,9 +16,9 @@ def get_list_rooms(page: int = 1, page_size: int = 10):
     return _svc().get_list_rooms(page, page_size)
 
 
-@router.get("/{room_id}")
-def get_room(room_id: int):
-    return _svc().get_room(room_id)
+@router.get("/{id}")
+def get_room(id: int):
+    return _svc().get_room(id)
 
 
 @router.post("")
@@ -26,13 +26,11 @@ def create_room(room: CreateRoom):
     return _svc().create_room(room)
 
 
-@router.put("/{room_id}")
-def update_room(room_id: int, room: UpdateRoom):
-    data = room.model_dump()
-    data["room_id"] = room_id
-    return _svc().update_room(UpdateRoom(**data))
+@router.put("/{id}")
+def update_room(id: int, room: UpdateRoom):
+    return _svc().update_room(id, room)
 
 
-@router.delete("/{room_id}")
-def delete_room(room_id: int):
-    return _svc().delete_room(room_id)
+@router.delete("/{id}")
+def delete_room(id: int):
+    return _svc().delete_room(id)

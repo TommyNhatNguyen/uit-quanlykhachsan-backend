@@ -8,10 +8,10 @@ class CustomerService:
     def __init__(self, repo: CustomerRepository):
         self.repo = repo
 
-    def get_customer(self, customer_id: int) -> Customer:
-        result = self.repo.get_customer(customer_id)
+    def get_customer(self, id: int) -> Customer:
+        result = self.repo.get_customer(id)
         if isinstance(result, JSONResponse):
-            raise HTTPException(status_code=404, detail=f"Customer {customer_id} not found")
+            raise HTTPException(status_code=404, detail=f"Customer {id} not found")
         return result
 
     def get_list_customers(self, page: int = 1, page_size: int = 10) -> dict:
@@ -20,17 +20,16 @@ class CustomerService:
     def create_customer(self, customer: CreateCustomer) -> Customer:
         return self.repo.create_customer(customer)
 
-    def update_customer(self, customer: UpdateCustomer) -> Customer:
-        current = self.repo.get_customer(customer.customer_id)
+    def update_customer(self, id: int, data: UpdateCustomer) -> Customer:
+        current = self.repo.get_customer(id)
         if isinstance(current, JSONResponse):
-            raise HTTPException(status_code=404, detail=f"Customer {customer.customer_id} not found")
-        merged_data = current.model_dump()
-        merged_data.update(customer.model_dump(exclude_none=True))
-        return self.repo.update_customer(UpdateCustomer(**merged_data))
+            raise HTTPException(status_code=404, detail=f"Customer {id} not found")
+        merged = {**current.model_dump(), **data.model_dump(exclude_none=True)}
+        return self.repo.update_customer(id, Customer(**merged))
 
-    def delete_customer(self, customer_id: int) -> Customer:
-        current = self.repo.get_customer(customer_id)
+    def delete_customer(self, id: int) -> Customer:
+        current = self.repo.get_customer(id)
         if isinstance(current, JSONResponse):
-            raise HTTPException(status_code=404, detail=f"Customer {customer_id} not found")
-        self.repo.delete_customer(customer_id)
+            raise HTTPException(status_code=404, detail=f"Customer {id} not found")
+        self.repo.delete_customer(id)
         return current

@@ -28,9 +28,7 @@ def create_customer_history_purchase(chp: CreateCustomerHistoryPurchase):
 
 @router.put("/{id}")
 def update_customer_history_purchase(id: int, chp: UpdateCustomerHistoryPurchase):
-    data = chp.model_dump()
-    data["id"] = id
-    return _svc().update_customer_history_purchase(UpdateCustomerHistoryPurchase(**data))
+    return _svc().update_customer_history_purchase(id, chp)
 
 
 @router.delete("/{id}")

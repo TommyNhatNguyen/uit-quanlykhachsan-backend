@@ -13,49 +13,46 @@ class RoomTypeRepository:
             conn = self.db.get_connection()
             cur = conn.cursor(as_dict=True)
             cur.execute("""
-                INSERT INTO dbo.room_type (room_type_id, room_type_name) VALUES (%s, %s)
-            """, (room_type.room_type_id, room_type.room_type_name))
+                INSERT INTO dbo.room_type (name, is_deleted) OUTPUT INSERTED.id VALUES (%s, 0)
+            """, (room_type.name,))
+            new_id = cur.fetchone()["id"]
             conn.commit()
-            return self.get_room_type(room_type.room_type_id)
+            return self.get_room_type(new_id)
         except Exception as e:
             return JSONResponse({"error": str(e)}, status_code=500)
         finally:
             conn.close()
 
-    def get_room_type(self, room_type_id: int) -> RoomType:
+    def get_room_type(self, id: int) -> RoomType:
         try:
             conn = self.db.get_connection()
             cur = conn.cursor(as_dict=True)
-            cur.execute("""
-                SELECT * FROM dbo.room_type WHERE room_type_id = %s
-            """, (room_type_id,))
+            cur.execute("SELECT * FROM dbo.room_type WHERE id = %s", (id,))
             return RoomType(**cur.fetchone())
         except Exception as e:
             return JSONResponse({"error": str(e)}, status_code=500)
         finally:
             conn.close()
 
-    def update_room_type(self, room_type: UpdateRoomType) -> RoomType:
+    def update_room_type(self, id: int, room_type: RoomType) -> RoomType:
         try:
             conn = self.db.get_connection()
             cur = conn.cursor(as_dict=True)
             cur.execute("""
-                UPDATE dbo.room_type SET room_type_name = %s WHERE room_type_id = %s
-            """, (room_type.room_type_name, room_type.room_type_id))
+                UPDATE dbo.room_type SET name=%s, is_deleted=%s WHERE id=%s
+            """, (room_type.name, room_type.is_deleted, id))
             conn.commit()
-            return self.get_room_type(room_type.room_type_id)
+            return self.get_room_type(id)
         except Exception as e:
             return JSONResponse({"error": str(e)}, status_code=500)
         finally:
             conn.close()
 
-    def delete_room_type(self, room_type_id: int) -> bool:
+    def delete_room_type(self, id: int) -> bool:
         try:
             conn = self.db.get_connection()
             cur = conn.cursor(as_dict=True)
-            cur.execute("""
-                DELETE FROM dbo.room_type WHERE room_type_id = %s
-            """, (room_type_id,))
+            cur.execute("UPDATE dbo.room_type SET is_deleted=1 WHERE id=%s", (id,))
             conn.commit()
             return True
         except Exception as e:
@@ -68,14 +65,14 @@ class RoomTypeRepository:
             conn = self.db.get_connection()
             cur = conn.cursor(as_dict=True)
             cur.execute("""
-                SELECT * FROM dbo.room_type
-                ORDER BY room_type_id
-                OFFSET %s ROWS FETCH NEXT %s ROWS ONLY
+                SELECT * FROM dbo.room_type WHERE is_deleted=0
+                ORDER BY id OFFSET %s ROWS FETCH NEXT %s ROWS ONLY
             """, ((page - 1) * page_size, page_size))
             rows = cur.fetchall()
             total = cur.rowcount
-            total_pages = math.ceil(total / page_size)
-            return {"page": page, "page_size": page_size, "total": total, "total_pages": total_pages, "data": [RoomType(**row) for row in rows]}
+            return {"page": page, "page_size": page_size, "total": total,
+                    "total_pages": math.ceil(total / page_size) if total else 0,
+                    "data": [RoomType(**r) for r in rows]}
         except Exception as e:
             return JSONResponse({"error": str(e)}, status_code=500)
         finally:

@@ -16,9 +16,9 @@ def get_list_bookings(page: int = 1, page_size: int = 10):
     return _svc().get_list_bookings(page, page_size)
 
 
-@router.get("/{booking_id}")
-def get_booking(booking_id: int):
-    return _svc().get_booking(booking_id)
+@router.get("/{id}")
+def get_booking(id: int):
+    return _svc().get_booking(id)
 
 
 @router.post("")
@@ -26,13 +26,11 @@ def create_booking(booking: CreateBooking):
     return _svc().create_booking(booking)
 
 
-@router.put("/{booking_id}")
-def update_booking(booking_id: int, booking: UpdateBooking):
-    data = booking.model_dump()
-    data["booking_id"] = booking_id
-    return _svc().update_booking(UpdateBooking(**data))
+@router.put("/{id}")
+def update_booking(id: int, booking: UpdateBooking):
+    return _svc().update_booking(id, booking)
 
 
-@router.delete("/{booking_id}")
-def delete_booking(booking_id: int):
-    return _svc().delete_booking(booking_id)
+@router.delete("/{id}")
+def delete_booking(id: int):
+    return _svc().delete_booking(id)

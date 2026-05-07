@@ -1,62 +1,61 @@
 import math
 from fastapi.responses import JSONResponse
 from src.db.db import MySQLDatabase
-from src.models.service_detail import ServiceDetail, CreateServiceDetail, UpdateServiceDetail
+from src.models.service_detail import ServicesDetail, CreateServicesDetail, UpdateServicesDetail
 
 
-class ServiceDetailRepository:
+class ServicesDetailRepository:
     def __init__(self, db: MySQLDatabase):
         self.db = db
 
-    def create_service_detail(self, service_detail: CreateServiceDetail) -> ServiceDetail:
+    def create_services_detail(self, detail: CreateServicesDetail) -> ServicesDetail:
         try:
             conn = self.db.get_connection()
             cur = conn.cursor(as_dict=True)
             cur.execute("""
-                INSERT INTO dbo.service_detail (service_detail, booking_id, service_item_id, quantity, price, amount)
-                VALUES (%s, %s, %s, %s, %s, %s)
-            """, (service_detail.service_detail, service_detail.booking_id, service_detail.service_item_id, service_detail.quantity, service_detail.price, service_detail.amount))
+                INSERT INTO dbo.service_detail (booking_detail_id, service_id, quanity, price, total_amount)
+                OUTPUT INSERTED.id VALUES (%s, %s, %s, %s, %s)
+            """, (detail.booking_detail_id, detail.service_id, detail.quanity, detail.price, detail.total_amount))
+            new_id = cur.fetchone()["id"]
             conn.commit()
-            return self.get_service_detail(service_detail.service_detail)
+            return self.get_services_detail(new_id)
         except Exception as e:
             return JSONResponse({"error": str(e)}, status_code=500)
         finally:
             conn.close()
 
-    def get_service_detail(self, service_detail_id: int) -> ServiceDetail:
+    def get_services_detail(self, id: int) -> ServicesDetail:
         try:
             conn = self.db.get_connection()
             cur = conn.cursor(as_dict=True)
-            cur.execute("""
-                SELECT * FROM dbo.service_detail WHERE service_detail = %s
-            """, (service_detail_id,))
-            return ServiceDetail(**cur.fetchone())
+            cur.execute("SELECT * FROM dbo.service_detail WHERE id = %s", (id,))
+            return ServicesDetail(**cur.fetchone())
         except Exception as e:
             return JSONResponse({"error": str(e)}, status_code=500)
         finally:
             conn.close()
 
-    def update_service_detail(self, service_detail: UpdateServiceDetail) -> ServiceDetail:
+    def update_services_detail(self, id: int, detail: ServicesDetail) -> ServicesDetail:
         try:
             conn = self.db.get_connection()
             cur = conn.cursor(as_dict=True)
             cur.execute("""
-                UPDATE dbo.service_detail SET booking_id = %s, service_item_id = %s, quantity = %s, price = %s, amount = %s WHERE service_detail = %s
-            """, (service_detail.booking_id, service_detail.service_item_id, service_detail.quantity, service_detail.price, service_detail.amount, service_detail.service_detail))
+                UPDATE dbo.service_detail SET booking_detail_id=%s, service_id=%s,
+                    quanity=%s, price=%s, total_amount=%s WHERE id=%s
+            """, (detail.booking_detail_id, detail.service_id, detail.quanity,
+                  detail.price, detail.total_amount, id))
             conn.commit()
-            return self.get_service_detail(service_detail.service_detail)
+            return self.get_services_detail(id)
         except Exception as e:
             return JSONResponse({"error": str(e)}, status_code=500)
         finally:
             conn.close()
 
-    def delete_service_detail(self, service_detail_id: int) -> bool:
+    def delete_services_detail(self, id: int) -> bool:
         try:
             conn = self.db.get_connection()
             cur = conn.cursor(as_dict=True)
-            cur.execute("""
-                DELETE FROM dbo.service_detail WHERE service_detail = %s
-            """, (service_detail_id,))
+            cur.execute("DELETE FROM dbo.service_detail WHERE id=%s", (id,))
             conn.commit()
             return True
         except Exception as e:
@@ -64,19 +63,19 @@ class ServiceDetailRepository:
         finally:
             conn.close()
 
-    def get_list_service_details(self, page: int = 1, page_size: int = 10) -> dict:
+    def get_list_services_details(self, page: int = 1, page_size: int = 10) -> dict:
         try:
             conn = self.db.get_connection()
             cur = conn.cursor(as_dict=True)
             cur.execute("""
                 SELECT * FROM dbo.service_detail
-                ORDER BY service_detail
-                OFFSET %s ROWS FETCH NEXT %s ROWS ONLY
+                ORDER BY id OFFSET %s ROWS FETCH NEXT %s ROWS ONLY
             """, ((page - 1) * page_size, page_size))
             rows = cur.fetchall()
             total = cur.rowcount
-            total_pages = math.ceil(total / page_size)
-            return {"page": page, "page_size": page_size, "total": total, "total_pages": total_pages, "data": [ServiceDetail(**row) for row in rows]}
+            return {"page": page, "page_size": page_size, "total": total,
+                    "total_pages": math.ceil(total / page_size) if total else 0,
+                    "data": [ServicesDetail(**r) for r in rows]}
         except Exception as e:
             return JSONResponse({"error": str(e)}, status_code=500)
         finally:

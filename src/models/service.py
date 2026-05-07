@@ -1,7 +1,9 @@
-from typing import Optional, List
+from __future__ import annotations
+from typing import Optional, List, TYPE_CHECKING
 from pydantic import BaseModel
 
-from src.models.service_price_log import ServicePriceLog
+if TYPE_CHECKING:
+    from src.models.service_price_log import ServicePriceLog
 
 
 class Service(BaseModel):
@@ -12,7 +14,8 @@ class Service(BaseModel):
 
 
 class PopulatedService(Service):
-    service_price_logs: Optional[List[ServicePriceLog]] = None
+    service_price_logs: Optional[List["ServicePriceLog"]] = None
+
 
 class CreateService(BaseModel):
     name: str
@@ -24,4 +27,3 @@ class UpdateService(BaseModel):
     name: Optional[str] = None
     catalog: Optional[str] = None
     current_price: Optional[float] = None
-

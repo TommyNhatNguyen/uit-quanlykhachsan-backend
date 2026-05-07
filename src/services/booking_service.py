@@ -8,10 +8,10 @@ class BookingService:
     def __init__(self, repo: BookingRepository):
         self.repo = repo
 
-    def get_booking(self, booking_id: int) -> Booking:
-        result = self.repo.get_booking(booking_id)
+    def get_booking(self, id: int) -> Booking:
+        result = self.repo.get_booking(id)
         if isinstance(result, JSONResponse):
-            raise HTTPException(status_code=404, detail=f"Booking {booking_id} not found")
+            raise HTTPException(status_code=404, detail=f"Booking {id} not found")
         return result
 
     def get_list_bookings(self, page: int = 1, page_size: int = 10) -> dict:
@@ -20,17 +20,16 @@ class BookingService:
     def create_booking(self, booking: CreateBooking) -> Booking:
         return self.repo.create_booking(booking)
 
-    def update_booking(self, booking: UpdateBooking) -> Booking:
-        current = self.repo.get_booking(booking.booking_id)
+    def update_booking(self, id: int, data: UpdateBooking) -> Booking:
+        current = self.repo.get_booking(id)
         if isinstance(current, JSONResponse):
-            raise HTTPException(status_code=404, detail=f"Booking {booking.booking_id} not found")
-        merged_data = current.model_dump()
-        merged_data.update(booking.model_dump(exclude_none=True))
-        return self.repo.update_booking(UpdateBooking(**merged_data))
+            raise HTTPException(status_code=404, detail=f"Booking {id} not found")
+        merged = {**current.model_dump(), **data.model_dump(exclude_none=True)}
+        return self.repo.update_booking(id, Booking(**merged))
 
-    def delete_booking(self, booking_id: int) -> Booking:
-        current = self.repo.get_booking(booking_id)
+    def delete_booking(self, id: int) -> Booking:
+        current = self.repo.get_booking(id)
         if isinstance(current, JSONResponse):
-            raise HTTPException(status_code=404, detail=f"Booking {booking_id} not found")
-        self.repo.delete_booking(booking_id)
+            raise HTTPException(status_code=404, detail=f"Booking {id} not found")
+        self.repo.delete_booking(id)
         return current

@@ -1,36 +1,35 @@
 from fastapi import HTTPException
 from fastapi.responses import JSONResponse
-from src.models.room_log_price import RoomLogPrice, CreateRoomLogPrice, UpdateRoomLogPrice
-from src.repositories.room_log_price_repo import RoomLogPriceRepository
+from src.models.room_price_log import RoomPriceLog, CreateRoomPriceLog, UpdateRoomPriceLog
+from src.repositories.room_log_price_repo import RoomPriceLogRepository
 
 
-class RoomLogPriceService:
-    def __init__(self, repo: RoomLogPriceRepository):
+class RoomPriceLogService:
+    def __init__(self, repo: RoomPriceLogRepository):
         self.repo = repo
 
-    def get_room_log_price(self, id: int) -> RoomLogPrice:
-        result = self.repo.get_room_log_price(id)
+    def get_room_price_log(self, id: int) -> RoomPriceLog:
+        result = self.repo.get_room_price_log(id)
         if isinstance(result, JSONResponse):
-            raise HTTPException(status_code=404, detail=f"RoomLogPrice {id} not found")
+            raise HTTPException(status_code=404, detail=f"RoomPriceLog {id} not found")
         return result
 
-    def get_list_room_log_prices(self, page: int = 1, page_size: int = 10) -> dict:
-        return self.repo.get_list_room_log_prices(page, page_size)
+    def get_list_room_price_logs(self, page: int = 1, page_size: int = 10) -> dict:
+        return self.repo.get_list_room_price_logs(page, page_size)
 
-    def create_room_log_price(self, log: CreateRoomLogPrice) -> RoomLogPrice:
-        return self.repo.create_room_log_price(log)
+    def create_room_price_log(self, log: CreateRoomPriceLog) -> RoomPriceLog:
+        return self.repo.create_room_price_log(log)
 
-    def update_room_log_price(self, log: UpdateRoomLogPrice) -> RoomLogPrice:
-        current = self.repo.get_room_log_price(log.id)
+    def update_room_price_log(self, id: int, data: UpdateRoomPriceLog) -> RoomPriceLog:
+        current = self.repo.get_room_price_log(id)
         if isinstance(current, JSONResponse):
-            raise HTTPException(status_code=404, detail=f"RoomLogPrice {log.id} not found")
-        merged_data = current.model_dump()
-        merged_data.update(log.model_dump(exclude_none=True))
-        return self.repo.update_room_log_price(UpdateRoomLogPrice(**merged_data))
+            raise HTTPException(status_code=404, detail=f"RoomPriceLog {id} not found")
+        merged = {**current.model_dump(), **data.model_dump(exclude_none=True)}
+        return self.repo.update_room_price_log(id, RoomPriceLog(**merged))
 
-    def delete_room_log_price(self, id: int) -> RoomLogPrice:
-        current = self.repo.get_room_log_price(id)
+    def delete_room_price_log(self, id: int) -> RoomPriceLog:
+        current = self.repo.get_room_price_log(id)
         if isinstance(current, JSONResponse):
-            raise HTTPException(status_code=404, detail=f"RoomLogPrice {id} not found")
-        self.repo.delete_room_log_price(id)
+            raise HTTPException(status_code=404, detail=f"RoomPriceLog {id} not found")
+        self.repo.delete_room_price_log(id)
         return current

@@ -13,50 +13,50 @@ class CustomerRepository:
             conn = self.db.get_connection()
             cur = conn.cursor(as_dict=True)
             cur.execute("""
-                INSERT INTO dbo.customer (customer_id, customer_name, sex, phone, email, birthday, membership_type_id, total_paid)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-            """, (customer.customer_id, customer.customer_name, customer.sex, customer.phone, customer.email, customer.birthday, customer.membership_type_id, customer.total_paid))
+                INSERT INTO dbo.customer (name, phone, sex, identification_id, email, birthday, membership_type_id)
+                OUTPUT INSERTED.id VALUES (%s, %s, %s, %s, %s, %s, %s)
+            """, (customer.name, customer.phone, customer.sex, customer.identification_id,
+                  customer.email, customer.birthday, customer.membership_type_id))
+            new_id = cur.fetchone()["id"]
             conn.commit()
-            return self.get_customer(customer.customer_id)
+            return self.get_customer(new_id)
         except Exception as e:
             return JSONResponse({"error": str(e)}, status_code=500)
         finally:
             conn.close()
 
-    def get_customer(self, customer_id: int) -> Customer:
+    def get_customer(self, id: int) -> Customer:
         try:
             conn = self.db.get_connection()
             cur = conn.cursor(as_dict=True)
-            cur.execute("""
-                SELECT * FROM dbo.customer WHERE customer_id = %s
-            """, (customer_id,))
+            cur.execute("SELECT * FROM dbo.customer WHERE id = %s", (id,))
             return Customer(**cur.fetchone())
         except Exception as e:
             return JSONResponse({"error": str(e)}, status_code=500)
         finally:
             conn.close()
 
-    def update_customer(self, customer: UpdateCustomer) -> Customer:
+    def update_customer(self, id: int, customer: Customer) -> Customer:
         try:
             conn = self.db.get_connection()
             cur = conn.cursor(as_dict=True)
             cur.execute("""
-                UPDATE dbo.customer SET customer_name = %s, sex = %s, phone = %s, email = %s, birthday = %s, membership_type_id = %s, total_paid = %s WHERE customer_id = %s
-            """, (customer.customer_name, customer.sex, customer.phone, customer.email, customer.birthday, customer.membership_type_id, customer.total_paid, customer.customer_id))
+                UPDATE dbo.customer SET name=%s, phone=%s, sex=%s, identification_id=%s,
+                    email=%s, birthday=%s, membership_type_id=%s WHERE id=%s
+            """, (customer.name, customer.phone, customer.sex, customer.identification_id,
+                  customer.email, customer.birthday, customer.membership_type_id, id))
             conn.commit()
-            return self.get_customer(customer.customer_id)
+            return self.get_customer(id)
         except Exception as e:
             return JSONResponse({"error": str(e)}, status_code=500)
         finally:
             conn.close()
 
-    def delete_customer(self, customer_id: int) -> bool:
+    def delete_customer(self, id: int) -> bool:
         try:
             conn = self.db.get_connection()
             cur = conn.cursor(as_dict=True)
-            cur.execute("""
-                DELETE FROM dbo.customer WHERE customer_id = %s
-            """, (customer_id,))
+            cur.execute("DELETE FROM dbo.customer WHERE id=%s", (id,))
             conn.commit()
             return True
         except Exception as e:
@@ -70,13 +70,13 @@ class CustomerRepository:
             cur = conn.cursor(as_dict=True)
             cur.execute("""
                 SELECT * FROM dbo.customer
-                ORDER BY customer_id
-                OFFSET %s ROWS FETCH NEXT %s ROWS ONLY
+                ORDER BY id OFFSET %s ROWS FETCH NEXT %s ROWS ONLY
             """, ((page - 1) * page_size, page_size))
             rows = cur.fetchall()
             total = cur.rowcount
-            total_pages = math.ceil(total / page_size)
-            return {"page": page, "page_size": page_size, "total": total, "total_pages": total_pages, "data": [Customer(**row) for row in rows]}
+            return {"page": page, "page_size": page_size, "total": total,
+                    "total_pages": math.ceil(total / page_size) if total else 0,
+                    "data": [Customer(**r) for r in rows]}
         except Exception as e:
             return JSONResponse({"error": str(e)}, status_code=500)
         finally:

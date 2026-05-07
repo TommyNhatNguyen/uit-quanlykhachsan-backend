@@ -1,36 +1,35 @@
 from fastapi import HTTPException
 from fastapi.responses import JSONResponse
-from src.models.membership import MembershipType, CreateMembershipType, UpdateMembershipType
-from src.repositories.membership_type_repo import MembershipTypeRepository
+from src.models.membership import Membership, CreateMembership, UpdateMembership
+from src.repositories.membership_type_repo import MembershipRepository
 
 
-class MembershipTypeService:
-    def __init__(self, repo: MembershipTypeRepository):
+class MembershipService:
+    def __init__(self, repo: MembershipRepository):
         self.repo = repo
 
-    def get_membership_type(self, membership_type_id: int) -> MembershipType:
-        result = self.repo.get_membership_type(membership_type_id)
+    def get_membership(self, id: int) -> Membership:
+        result = self.repo.get_membership(id)
         if isinstance(result, JSONResponse):
-            raise HTTPException(status_code=404, detail=f"MembershipType {membership_type_id} not found")
+            raise HTTPException(status_code=404, detail=f"Membership {id} not found")
         return result
 
-    def get_list_membership_types(self, page: int = 1, page_size: int = 10) -> dict:
-        return self.repo.get_list_membership_types(page, page_size)
+    def get_list_memberships(self, page: int = 1, page_size: int = 10) -> dict:
+        return self.repo.get_list_memberships(page, page_size)
 
-    def create_membership_type(self, membership_type: CreateMembershipType) -> MembershipType:
-        return self.repo.create_membership_type(membership_type)
+    def create_membership(self, membership: CreateMembership) -> Membership:
+        return self.repo.create_membership(membership)
 
-    def update_membership_type(self, membership_type: UpdateMembershipType) -> MembershipType:
-        current = self.repo.get_membership_type(membership_type.membership_type_id)
+    def update_membership(self, id: int, data: UpdateMembership) -> Membership:
+        current = self.repo.get_membership(id)
         if isinstance(current, JSONResponse):
-            raise HTTPException(status_code=404, detail=f"MembershipType {membership_type.membership_type_id} not found")
-        merged_data = current.model_dump()
-        merged_data.update(membership_type.model_dump(exclude_none=True))
-        return self.repo.update_membership_type(UpdateMembershipType(**merged_data))
+            raise HTTPException(status_code=404, detail=f"Membership {id} not found")
+        merged = {**current.model_dump(), **data.model_dump(exclude_none=True)}
+        return self.repo.update_membership(id, Membership(**merged))
 
-    def delete_membership_type(self, membership_type_id: int) -> MembershipType:
-        current = self.repo.get_membership_type(membership_type_id)
+    def delete_membership(self, id: int) -> Membership:
+        current = self.repo.get_membership(id)
         if isinstance(current, JSONResponse):
-            raise HTTPException(status_code=404, detail=f"MembershipType {membership_type_id} not found")
-        self.repo.delete_membership_type(membership_type_id)
+            raise HTTPException(status_code=404, detail=f"Membership {id} not found")
+        self.repo.delete_membership(id)
         return current

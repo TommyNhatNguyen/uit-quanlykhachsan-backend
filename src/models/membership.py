@@ -1,5 +1,9 @@
-from typing import Optional
+from __future__ import annotations
+from typing import Optional, List, TYPE_CHECKING
 from pydantic import BaseModel
+
+if TYPE_CHECKING:
+    from src.models.customer import Customer
 
 
 class Membership(BaseModel):
@@ -8,6 +12,10 @@ class Membership(BaseModel):
     paid_from: Optional[float]
     paid_to: Optional[float]
     is_deleted: bool
+
+
+class PopulatedMembership(Membership):
+    customers: Optional[List["Customer"]] = None
 
 
 class CreateMembership(BaseModel):

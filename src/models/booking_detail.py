@@ -1,11 +1,23 @@
-from typing import Optional, List
+from __future__ import annotations
+from typing import Optional, List, TYPE_CHECKING
 from datetime import datetime
+from enum import Enum
 from pydantic import BaseModel
-from src.models.booking import BookingStatus
-from src.models.booking import PopulatedBooking
+
 from src.models.room import PopulatedRoom
 from src.models.payment import PopulatedPayment
 from src.models.service_detail import PopulatedServicesDetail
+
+if TYPE_CHECKING:
+    from src.models.booking import Booking
+
+
+class BookingStatus(str, Enum):
+    BOOKED = "BOOKED"
+    CANCELED = "CANCELED"
+    CHECKIN = "CHECKIN"
+    CHECKOUT = "CHECKOUT"
+
 
 class BookingDetail(BaseModel):
     id: int
@@ -23,10 +35,11 @@ class BookingDetail(BaseModel):
 
 
 class PopulatedBookingDetail(BookingDetail):
-    booking: Optional[PopulatedBooking] = None
+    booking: Optional["Booking"] = None
     room: Optional[PopulatedRoom] = None
     payments: Optional[List[PopulatedPayment]] = None
     services_details: Optional[List[PopulatedServicesDetail]] = None
+
 
 class CreateBookingDetail(BaseModel):
     booking_id: int

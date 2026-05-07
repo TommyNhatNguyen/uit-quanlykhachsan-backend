@@ -13,50 +13,50 @@ class EmployeeRepository:
             conn = self.db.get_connection()
             cur = conn.cursor(as_dict=True)
             cur.execute("""
-                INSERT INTO dbo.employee (employee_id, employee_name, birthday, phone, is_working, position, start_working_date)
-                VALUES (%s, %s, %s, %s, %s, %s, %s)
-            """, (employee.employee_id, employee.employee_name, employee.birthday, employee.phone, employee.is_working, employee.position, employee.start_working_date))
+                INSERT INTO dbo.employee (name, phone, start_working_date, is_deleted)
+                OUTPUT INSERTED.id VALUES (%s, %s, %s, 0)
+            """, (employee.name, employee.phone, employee.start_working_date))
+            new_id = cur.fetchone()["id"]
             conn.commit()
-            return self.get_employee(employee.employee_id)
+            return self.get_employee(new_id)
         except Exception as e:
             return JSONResponse({"error": str(e)}, status_code=500)
         finally:
             conn.close()
 
-    def get_employee(self, employee_id: int) -> Employee:
+    def get_employee(self, id: int) -> Employee:
         try:
             conn = self.db.get_connection()
             cur = conn.cursor(as_dict=True)
-            cur.execute("""
-                SELECT * FROM dbo.employee WHERE employee_id = %s
-            """, (employee_id,))
+            cur.execute("SELECT * FROM dbo.employee WHERE id = %s", (id,))
             return Employee(**cur.fetchone())
         except Exception as e:
             return JSONResponse({"error": str(e)}, status_code=500)
         finally:
             conn.close()
 
-    def update_employee(self, employee: UpdateEmployee) -> Employee:
+    def update_employee(self, id: int, employee: Employee) -> Employee:
         try:
             conn = self.db.get_connection()
             cur = conn.cursor(as_dict=True)
             cur.execute("""
-                UPDATE dbo.employee SET employee_name = %s, birthday = %s, phone = %s, is_working = %s, position = %s, start_working_date = %s WHERE employee_id = %s
-            """, (employee.employee_name, employee.birthday, employee.phone, employee.is_working, employee.position, employee.start_working_date, employee.employee_id))
+                UPDATE dbo.employee SET name=%s, birthday=%s, phone=%s, is_working=%s, position=%s,
+                    start_working_date=%s, employee_account_id=%s, is_deleted=%s, role=%s WHERE id=%s
+            """, (employee.name, employee.birthday, employee.phone, employee.is_working, employee.position,
+                  employee.start_working_date, employee.employee_account_id, employee.is_deleted,
+                  employee.role, id))
             conn.commit()
-            return self.get_employee(employee.employee_id)
+            return self.get_employee(id)
         except Exception as e:
             return JSONResponse({"error": str(e)}, status_code=500)
         finally:
             conn.close()
 
-    def delete_employee(self, employee_id: int) -> bool:
+    def delete_employee(self, id: int) -> bool:
         try:
             conn = self.db.get_connection()
             cur = conn.cursor(as_dict=True)
-            cur.execute("""
-                DELETE FROM dbo.employee WHERE employee_id = %s
-            """, (employee_id,))
+            cur.execute("UPDATE dbo.employee SET is_deleted=1 WHERE id=%s", (id,))
             conn.commit()
             return True
         except Exception as e:
@@ -69,14 +69,14 @@ class EmployeeRepository:
             conn = self.db.get_connection()
             cur = conn.cursor(as_dict=True)
             cur.execute("""
-                SELECT * FROM dbo.employee
-                ORDER BY employee_id
-                OFFSET %s ROWS FETCH NEXT %s ROWS ONLY
+                SELECT * FROM dbo.employee WHERE is_deleted=0
+                ORDER BY id OFFSET %s ROWS FETCH NEXT %s ROWS ONLY
             """, ((page - 1) * page_size, page_size))
             rows = cur.fetchall()
             total = cur.rowcount
-            total_pages = math.ceil(total / page_size)
-            return {"page": page, "page_size": page_size, "total": total, "total_pages": total_pages, "data": [Employee(**row) for row in rows]}
+            return {"page": page, "page_size": page_size, "total": total,
+                    "total_pages": math.ceil(total / page_size) if total else 0,
+                    "data": [Employee(**r) for r in rows]}
         except Exception as e:
             return JSONResponse({"error": str(e)}, status_code=500)
         finally:

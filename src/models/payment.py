@@ -1,9 +1,12 @@
-from typing import Optional
+from __future__ import annotations
+from typing import Optional, TYPE_CHECKING
 from datetime import datetime
 from pydantic import BaseModel
 
-from src.models.booking_detail import PopulatedBookingDetail
 from src.models.employee import PopulatedEmployee
+
+if TYPE_CHECKING:
+    from src.models.booking_detail import BookingDetail
 
 
 class Payment(BaseModel):
@@ -18,7 +21,7 @@ class Payment(BaseModel):
 
 class PopulatedPayment(Payment):
     cashier: Optional[PopulatedEmployee] = None
-    booking_detail: Optional[PopulatedBookingDetail] = None
+    booking_detail: Optional["BookingDetail"] = None
 
 
 class CreatePayment(BaseModel):
