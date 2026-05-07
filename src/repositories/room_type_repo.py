@@ -1,3 +1,4 @@
+from ast import List
 import math
 from fastapi.responses import JSONResponse
 from src.db.db import MySQLDatabase
@@ -64,12 +65,13 @@ class RoomTypeRepository:
         try:
             conn = self.db.get_connection()
             cur = conn.cursor(as_dict=True)
+            cur.execute("SELECT COUNT(*) AS total FROM dbo.room_type WHERE is_deleted=0")
+            total = cur.fetchone()["total"]
             cur.execute("""
                 SELECT * FROM dbo.room_type WHERE is_deleted=0
                 ORDER BY id OFFSET %s ROWS FETCH NEXT %s ROWS ONLY
             """, ((page - 1) * page_size, page_size))
             rows = cur.fetchall()
-            total = cur.rowcount
             return {"page": page, "page_size": page_size, "total": total,
                     "total_pages": math.ceil(total / page_size) if total else 0,
                     "data": [RoomType(**r) for r in rows]}

@@ -1,6 +1,7 @@
-from fastapi import APIRouter
+from typing import Annotated
+from fastapi import APIRouter, Depends
 from src.db.db import db
-from src.models.customer import CreateCustomer, UpdateCustomer
+from src.models.customer import CreateCustomer, UpdateCustomer, QueryCustomersParams
 from src.repositories.customer_repo import CustomerRepository
 from src.services.customer_service import CustomerService
 
@@ -12,8 +13,8 @@ def _svc() -> CustomerService:
 
 
 @router.get("")
-def get_list_customers(page: int = 1, page_size: int = 10):
-    return _svc().get_list_customers(page, page_size)
+def get_list_customers(params: Annotated[QueryCustomersParams, Depends()]):
+    return _svc().get_list_customers(params)
 
 
 @router.get("/{id}")

@@ -36,3 +36,10 @@ class UpdateCustomer(BaseModel):
     birthday: Optional[datetime] = None
     identification_id: Optional[str] = None
     membership_type_id: Optional[int] = None
+
+
+class QueryCustomersParams(BaseModel):
+    page: int = 1
+    page_size: int = 10
+    membership_type_id: Optional[int] = None
+

@@ -1,6 +1,6 @@
 from fastapi import HTTPException
 from fastapi.responses import JSONResponse
-from src.models.customer import Customer, CreateCustomer, UpdateCustomer
+from src.models.customer import Customer, CreateCustomer, UpdateCustomer, QueryCustomersParams
 from src.repositories.customer_repo import CustomerRepository
 
 
@@ -14,8 +14,8 @@ class CustomerService:
             raise HTTPException(status_code=404, detail=f"Customer {id} not found")
         return result
 
-    def get_list_customers(self, page: int = 1, page_size: int = 10) -> dict:
-        return self.repo.get_list_customers(page, page_size)
+    def get_list_customers(self, params: QueryCustomersParams) -> dict:
+        return self.repo.get_list_customers(params)
 
     def create_customer(self, customer: CreateCustomer) -> Customer:
         return self.repo.create_customer(customer)

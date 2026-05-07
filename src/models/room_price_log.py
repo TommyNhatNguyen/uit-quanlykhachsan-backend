@@ -26,3 +26,8 @@ class UpdateRoomPriceLog(BaseModel):
     room_id: Optional[int] = None
     created_at: Optional[datetime] = None
     price_per_night: Optional[float] = None
+
+class QueryRoomPriceLogsParams(BaseModel):
+    page: int = 1
+    page_size: int = 10
+    room_id: Optional[int] = None

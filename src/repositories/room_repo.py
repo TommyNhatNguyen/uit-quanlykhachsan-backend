@@ -1,7 +1,8 @@
 import math
 from fastapi.responses import JSONResponse
 from src.db.db import MySQLDatabase
-from src.models.room import Room, CreateRoom, UpdateRoom
+from src.models.room import QueryRoomsParams, Room, PopulatedRoom, CreateRoom, UpdateRoom
+from src.models.room_type import RoomType
 
 
 class RoomRepository:
@@ -70,20 +71,46 @@ class RoomRepository:
         finally:
             conn.close()
 
-    def get_list_rooms(self, page: int = 1, page_size: int = 10) -> dict:
+    def get_list_rooms(self, params: QueryRoomsParams) -> dict:
         try:
             conn = self.db.get_connection()
             cur = conn.cursor(as_dict=True)
-            cur.execute("""
-                SELECT * FROM dbo.room WHERE is_deleted=0
-                ORDER BY id
-                OFFSET %s ROWS FETCH NEXT %s ROWS ONLY
-            """, ((page - 1) * page_size, page_size))
+
+            where = "WHERE r.is_deleted=0"
+            filter_args = []
+            if params.room_type_id:
+                where += " AND r.room_type_id = %s"
+                filter_args.append(params.room_type_id)
+            if params.price_from is not None and params.price_to is not None:
+                where += " AND r.current_price_per_night >= %s AND r.current_price_per_night <= %s"
+                filter_args.extend([params.price_from, params.price_to])
+
+            cur.execute(f"SELECT COUNT(*) AS total FROM dbo.room r {where}", filter_args)
+            total = cur.fetchone()["total"]
+
+            cur.execute(f"""
+                SELECT r.id, r.room_num, r.room_name, r.capacity, r.area, r.is_smoking,
+                    r.has_wifi, r.has_pool, r.description, r.room_type_id, r.hotel_id,
+                    r.current_price_per_night, r.is_deleted, r.is_underconstruction,
+                    rt.id AS rt_id, rt.name AS rt_name, rt.is_deleted AS rt_is_deleted
+                FROM dbo.room r
+                LEFT JOIN dbo.room_type rt ON r.room_type_id = rt.id
+                {where}
+                ORDER BY r.id OFFSET %s ROWS FETCH NEXT %s ROWS ONLY
+            """, filter_args + [(params.page - 1) * params.page_size, params.page_size])
             rows = cur.fetchall()
-            total = cur.rowcount
-            return {"page": page, "page_size": page_size, "total": total,
-                    "total_pages": math.ceil(total / page_size) if total else 0,
-                    "data": [Room(**r) for r in rows]}
+
+            data = []
+            for row in rows:
+                room_type = None
+                if row.get("rt_id"):
+                    room_type = RoomType(id=row["rt_id"], name=row["rt_name"], is_deleted=row["rt_is_deleted"])
+                room_data = {k: v for k, v in row.items() if not k.startswith("rt_")}
+                data.append(PopulatedRoom(**room_data, room_type=room_type))
+
+            return {"page": params.page, "page_size": params.page_size, "total": total,
+                    "total_pages": math.ceil(total / params.page_size) if total else 0,
+                    "data": data}
         except Exception as e:
             return JSONResponse({"error": str(e)}, status_code=500)
         finally:

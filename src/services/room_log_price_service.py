@@ -1,6 +1,6 @@
 from fastapi import HTTPException
 from fastapi.responses import JSONResponse
-from src.models.room_price_log import RoomPriceLog, CreateRoomPriceLog, UpdateRoomPriceLog
+from src.models.room_price_log import QueryRoomPriceLogsParams, RoomPriceLog, CreateRoomPriceLog, UpdateRoomPriceLog
 from src.repositories.room_log_price_repo import RoomPriceLogRepository
 
 
@@ -14,8 +14,8 @@ class RoomPriceLogService:
             raise HTTPException(status_code=404, detail=f"RoomPriceLog {id} not found")
         return result
 
-    def get_list_room_price_logs(self, page: int = 1, page_size: int = 10) -> dict:
-        return self.repo.get_list_room_price_logs(page, page_size)
+    def get_list_room_price_logs(self, params: QueryRoomPriceLogsParams) -> dict:
+        return self.repo.get_list_room_price_logs(params)
 
     def create_room_price_log(self, log: CreateRoomPriceLog) -> RoomPriceLog:
         return self.repo.create_room_price_log(log)

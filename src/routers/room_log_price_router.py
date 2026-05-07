@@ -1,6 +1,7 @@
-from fastapi import APIRouter
+from typing import Annotated
+from fastapi import APIRouter, Depends
 from src.db.db import db
-from src.models.room_price_log import CreateRoomPriceLog, UpdateRoomPriceLog
+from src.models.room_price_log import CreateRoomPriceLog, QueryRoomPriceLogsParams, UpdateRoomPriceLog
 from src.repositories.room_log_price_repo import RoomPriceLogRepository
 from src.services.room_log_price_service import RoomPriceLogService
 
@@ -12,8 +13,8 @@ def _svc() -> RoomPriceLogService:
 
 
 @router.get("")
-def get_list_room_price_logs(page: int = 1, page_size: int = 10):
-    return _svc().get_list_room_price_logs(page, page_size)
+def get_list_room_price_logs(params: Annotated[QueryRoomPriceLogsParams, Depends()]):
+    return _svc().get_list_room_price_logs(params)
 
 
 @router.get("/{id}")

@@ -1,6 +1,7 @@
-from fastapi import APIRouter
+from typing import Annotated
+from fastapi import APIRouter, Depends
 from src.db.db import db
-from src.models.room import CreateRoom, UpdateRoom
+from src.models.room import CreateRoom, QueryRoomsParams, UpdateRoom
 from src.repositories.room_repo import RoomRepository
 from src.services.room_service import RoomService
 
@@ -12,8 +13,8 @@ def _svc() -> RoomService:
 
 
 @router.get("")
-def get_list_rooms(page: int = 1, page_size: int = 10):
-    return _svc().get_list_rooms(page, page_size)
+def get_list_rooms(params: Annotated[QueryRoomsParams, Depends()]):
+    return _svc().get_list_rooms(params)
 
 
 @router.get("/{id}")

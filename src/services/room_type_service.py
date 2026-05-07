@@ -15,7 +15,10 @@ class RoomTypeService:
         return result
 
     def get_list_room_types(self, page: int = 1, page_size: int = 10) -> dict:
-        return self.repo.get_list_room_types(page, page_size)
+        result = self.repo.get_list_room_types(page, page_size)
+        if isinstance(result, JSONResponse):
+            raise HTTPException(status_code=500, detail=result["error"])
+        return result
 
     def create_room_type(self, room_type: CreateRoomType) -> RoomType:
         return self.repo.create_room_type(room_type)

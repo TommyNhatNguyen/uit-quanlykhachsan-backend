@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Optional, List, TYPE_CHECKING
+from typing import Optional, List, TYPE_CHECKING, Tuple
 from pydantic import BaseModel
 
 from src.models.hotel import Hotel
@@ -61,3 +61,10 @@ class UpdateRoom(BaseModel):
     current_price_per_night: Optional[float] = None
     is_deleted: Optional[bool] = None
     is_underconstruction: Optional[bool] = None
+
+class QueryRoomsParams(BaseModel):
+    page: int = 1
+    page_size: int = 10
+    room_type_id: Optional[int] = None
+    price_from: Optional[float] = None
+    price_to: Optional[float] = None

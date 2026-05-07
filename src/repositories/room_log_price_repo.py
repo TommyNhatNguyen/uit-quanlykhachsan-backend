@@ -1,7 +1,8 @@
 import math
 from fastapi.responses import JSONResponse
 from src.db.db import MySQLDatabase
-from src.models.room_price_log import RoomPriceLog, CreateRoomPriceLog, UpdateRoomPriceLog
+from src.models.room_price_log import QueryRoomPriceLogsParams, RoomPriceLog, PopulatedRoomPriceLog, CreateRoomPriceLog, UpdateRoomPriceLog
+from src.models.room import Room
 
 
 class RoomPriceLogRepository:
@@ -61,19 +62,49 @@ class RoomPriceLogRepository:
         finally:
             conn.close()
 
-    def get_list_room_price_logs(self, page: int = 1, page_size: int = 10) -> dict:
+    def get_list_room_price_logs(self, params: QueryRoomPriceLogsParams) -> dict:
         try:
             conn = self.db.get_connection()
             cur = conn.cursor(as_dict=True)
-            cur.execute("""
-                SELECT * FROM dbo.room_price_log
-                ORDER BY id OFFSET %s ROWS FETCH NEXT %s ROWS ONLY
-            """, ((page - 1) * page_size, page_size))
+
+            where = "WHERE 1=1"
+            filter_args = []
+            if params.room_id:
+                where += " AND room_id = %s"
+                filter_args.append(params.room_id)
+
+            cur.execute(f"SELECT COUNT(*) AS total FROM dbo.room_price_log {where}", filter_args)
+            total = cur.fetchone()["total"]
+
+            cur.execute(f"""
+                SELECT rpl.id, rpl.room_id, rpl.created_at, rpl.price_per_night,
+                    r.id AS r_id, r.room_num AS r_room_num, r.room_name AS r_room_name,
+                    r.capacity AS r_capacity, r.area AS r_area, r.is_smoking AS r_is_smoking,
+                    r.has_wifi AS r_has_wifi, r.has_pool AS r_has_pool,
+                    r.description AS r_description, r.room_type_id AS r_room_type_id,
+                    r.hotel_id AS r_hotel_id,
+                    r.current_price_per_night AS r_current_price_per_night,
+                    r.is_deleted AS r_is_deleted,
+                    r.is_underconstruction AS r_is_underconstruction
+                FROM dbo.room_price_log rpl
+                LEFT JOIN dbo.room r ON rpl.room_id = r.id
+                {where}
+                ORDER BY r.id ASC, rpl.created_at DESC OFFSET %s ROWS FETCH NEXT %s ROWS ONLY
+            """, filter_args + [(params.page - 1) * params.page_size, params.page_size])
             rows = cur.fetchall()
-            total = cur.rowcount
-            return {"page": page, "page_size": page_size, "total": total,
-                    "total_pages": math.ceil(total / page_size) if total else 0,
-                    "data": [RoomPriceLog(**r) for r in rows]}
+
+            data = []
+            for row in rows:
+                room = None
+                if row.get("r_id"):
+                    room_data = {k[2:]: v for k, v in row.items() if k.startswith("r_")}
+                    room = Room(**room_data)
+                log_data = {k: v for k, v in row.items() if not k.startswith("r_")}
+                data.append(PopulatedRoomPriceLog(**log_data, room=room))
+
+            return {"page": params.page, "page_size": params.page_size, "total": total,
+                    "total_pages": math.ceil(total / params.page_size) if total else 0,
+                    "data": data}
         except Exception as e:
             return JSONResponse({"error": str(e)}, status_code=500)
         finally:
