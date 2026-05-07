@@ -1,7 +1,7 @@
 import math
 from fastapi.responses import JSONResponse
 from src.db.db import MySQLDatabase
-from src.models.service_item import ServiceItem, CreateServiceItem, UpdateServiceItem
+from src.models.service import ServiceItem, CreateServiceItem, UpdateServiceItem
 
 
 class ServiceItemRepository:

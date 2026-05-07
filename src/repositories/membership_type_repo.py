@@ -1,7 +1,7 @@
 import math
 from fastapi.responses import JSONResponse
 from src.db.db import MySQLDatabase
-from src.models.membership_type import MembershipType, CreateMembershipType, UpdateMembershipType
+from src.models.membership import MembershipType, CreateMembershipType, UpdateMembershipType
 
 
 class MembershipTypeRepository:

@@ -9,8 +9,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 
 from src.db.db import db
-from src.db.utils import ensure_extras, ensure_reference_data
-from src.routers import api_state
 from src.routers import (
     booking_router,
     booking_detail_router,
@@ -37,11 +35,6 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 async def lifespan(app: FastAPI):
     try:
         conn = db.get_connection()
-        cur = conn.cursor(as_dict=True)
-        ensure_extras(cur)
-        ensure_reference_data(cur)
-        conn.commit()
-        cur.close()
         conn.close()
         print("✅  Kết nối SQL Server thành công")
     except Exception as e:
@@ -58,12 +51,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-@app.get("/")
-def index():
-    return FileResponse(os.path.join(BASE_DIR, "admin.html"))
-
-app.include_router(api_state.router)
 app.include_router(booking_router.router)
 app.include_router(booking_detail_router.router)
 app.include_router(counter_router.router)

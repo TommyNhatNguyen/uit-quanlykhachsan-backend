@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from src.db.db import db
-from src.models.membership_type import CreateMembershipType, UpdateMembershipType
+from src.models.membership import CreateMembershipType, UpdateMembershipType
 from src.repositories.membership_type_repo import MembershipTypeRepository
 from src.services.membership_type_service import MembershipTypeService
 

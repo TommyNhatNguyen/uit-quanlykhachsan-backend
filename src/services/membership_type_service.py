@@ -1,6 +1,6 @@
 from fastapi import HTTPException
 from fastapi.responses import JSONResponse
-from src.models.membership_type import MembershipType, CreateMembershipType, UpdateMembershipType
+from src.models.membership import MembershipType, CreateMembershipType, UpdateMembershipType
 from src.repositories.membership_type_repo import MembershipTypeRepository
 
 

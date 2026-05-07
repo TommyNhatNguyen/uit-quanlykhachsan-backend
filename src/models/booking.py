@@ -1,38 +1,56 @@
+from typing import Optional, List
 from datetime import datetime
-from typing import Optional
+from enum import Enum
 from pydantic import BaseModel
+
+from src.models.customer import PopulatedCustomer
+from src.models.booking_detail import CreateBookingDetail, PopulatedBookingDetail, UpdateBookingDetail
+
+class BookingStatus(str, Enum):
+    BOOKED = "BOOKED"
+    CANCELED = "CANCELED"
+    CHECKIN = "CHECKIN"
+    CHECKOUT = "CHECKOUT"
 
 
 class Booking(BaseModel):
-    booking_id: int
+    id: int
     customer_id: int
-    checkin_datetime: Optional[datetime] = None
-    checkout_datetime: Optional[datetime] = None
-    status: Optional[str] = None
-    payment_id: Optional[int] = None    
-    hotel_id: Optional[int] = None
-    created_at: Optional[datetime] = None
-    notes: Optional[str] = None
+    created_at: Optional[datetime]
+    notes: Optional[str]
+    is_fully_paid: bool
+    is_deleted: bool
+
+
+class PopulatedBooking(Booking):
+    customer: Optional[PopulatedCustomer] = None
+    booking_details: Optional[List[PopulatedBookingDetail]] = None
+
 
 class CreateBooking(BaseModel):
-    booking_id: Optional[int] = None
-    customer_id: Optional[int] = None
-    checkin_datetime: Optional[datetime] = None
-    checkout_datetime: Optional[datetime] = None
-    status: Optional[str] = None
-    payment_id: Optional[int] = None
-    hotel_id: Optional[int] = None
-    created_at: Optional[datetime] = None
+    customer_id: int
     notes: Optional[str] = None
+    is_fully_paid: Optional[bool] = False
+    created_at: datetime = datetime.now()
+
+class CreateBookingWithManyDetails(BaseModel):
+    customer_id: int
+    notes: Optional[str] = None
+    is_fully_paid: Optional[bool] = False
+    booking_details: List[CreateBookingDetail]
+    created_at: datetime = datetime.now()
 
 class UpdateBooking(BaseModel):
-    booking_id: Optional[int] = None
     customer_id: Optional[int] = None
-    checkin_datetime: Optional[datetime] = None
-    checkout_datetime: Optional[datetime] = None
-    status: Optional[str] = None
-    payment_id: Optional[int] = None
-    hotel_id: Optional[int] = None
     created_at: Optional[datetime] = None
     notes: Optional[str] = None
+    is_fully_paid: Optional[bool] = None
+    is_deleted: Optional[bool] = None
 
+class UpdateBookingWithManyDetails(BaseModel):
+    customer_id: Optional[int] = None
+    created_at: Optional[datetime] = None
+    notes: Optional[str] = None
+    is_fully_paid: Optional[bool] = None
+    is_deleted: Optional[bool] = None
+    booking_details: Optional[List[UpdateBookingDetail]] = None

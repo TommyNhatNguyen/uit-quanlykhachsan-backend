@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from src.db.db import db
-from src.models.service_item import CreateServiceItem, UpdateServiceItem
+from src.models.service import CreateServiceItem, UpdateServiceItem
 from src.repositories.service_item_repo import ServiceItemRepository
 from src.services.service_item_service import ServiceItemService
 

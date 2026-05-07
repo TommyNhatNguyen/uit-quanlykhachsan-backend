@@ -1,6 +1,6 @@
 from fastapi import HTTPException
 from fastapi.responses import JSONResponse
-from src.models.service_item import ServiceItem, CreateServiceItem, UpdateServiceItem
+from src.models.service import ServiceItem, CreateServiceItem, UpdateServiceItem
 from src.repositories.service_item_repo import ServiceItemRepository
 
 

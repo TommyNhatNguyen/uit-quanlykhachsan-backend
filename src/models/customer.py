@@ -1,36 +1,38 @@
 from typing import Optional
+from datetime import datetime
 from pydantic import BaseModel
-from datetime import date
+from src.models.membership import Membership
 
 class Customer(BaseModel):
-    customer_id: int
-    customer_name: str
-    sex: str
-    phone: str
-    email: str
-    birthday: Optional[date] = None
-    membership_type_id: int
-    total_paid: float
-    notes: Optional[str] = None
-    created_at: Optional[date] = None
-    updated_at: Optional[date] = None
+    id: int
+    name: str
+    phone: int
+    # 1: Nam, 2: Nữ, 3: Khác
+    sex: int 
+    identification_id: str
+    email: Optional[str]
+    birthday: Optional[datetime]
+    membership_type_id: Optional[int]
+
+
+class PopulatedCustomer(Customer):
+    membership_type: Optional[Membership] = None
 
 class CreateCustomer(BaseModel):
-    customer_id: Optional[int] = None
-    customer_name: Optional[str] = None
-    sex: Optional[str] = None
-    phone: Optional[str] = None
+    name: str
+    phone: int
+    sex: int
+    identification_id: str
     email: Optional[str] = None
-    birthday: Optional[date] = None
+    birthday: Optional[datetime] = None
     membership_type_id: Optional[int] = None
-    total_paid: Optional[float] = None
+
 
 class UpdateCustomer(BaseModel):
-    customer_id: Optional[int] = None
-    customer_name: Optional[str] = None
-    sex: Optional[str] = None
-    phone: Optional[str] = None
+    name: Optional[str] = None
+    phone: Optional[int] = None
+    sex: Optional[int] = None
     email: Optional[str] = None
-    birthday: Optional[date] = None
+    birthday: Optional[datetime] = None
+    identification_id: Optional[str] = None
     membership_type_id: Optional[int] = None
-    total_paid: Optional[float] = None

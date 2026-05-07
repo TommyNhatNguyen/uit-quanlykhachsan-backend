@@ -3,13 +3,13 @@ from pydantic import BaseModel
 
 
 class RoomType(BaseModel):
-    room_type_id: int
-    room_type_name: Optional[str] = None
+    id: int
+    name: str
+    is_deleted: bool
 
 class CreateRoomType(BaseModel):
-    room_type_id: Optional[int] = None
-    room_type_name: Optional[str] = None
+    name: str
 
 class UpdateRoomType(BaseModel):
-    room_type_id: Optional[int] = None
-    room_type_name: Optional[str] = None
+    name: Optional[str] = None
+    is_deleted: Optional[bool] = None

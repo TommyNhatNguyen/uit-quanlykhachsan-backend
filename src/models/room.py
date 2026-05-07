@@ -1,33 +1,61 @@
+from ast import List
 from typing import Optional
 from pydantic import BaseModel
 
+from src.models.hotel import Hotel
+from src.models.room_price_log import RoomPriceLog
+from src.models.room_type import RoomType
+
 
 class Room(BaseModel):
-    room_id: int
-    room_number: Optional[str] = None
-    room_type_id: Optional[int] = None
-    price_per_night: Optional[float] = None
-    capacity: Optional[str] = None
-    room_area: Optional[str] = None
-    is_smoking: Optional[bool] = None
-    description: Optional[str] = None
+    id: int
+    room_num: str
+    room_name: str
+    capacity: int
+    area: float
+    is_smoking: Optional[bool]
+    has_wifi: Optional[bool]
+    has_pool: Optional[bool]
+    description: Optional[str]
+    room_type_id: Optional[int]
+    hotel_id: Optional[int]
+    current_price_per_night: float
+    is_deleted: bool
+    is_underconstruction: Optional[bool]
+
+
+class PopulatedRoom(Room):
+    room_type: Optional[RoomType] = None
+    hotel: Optional[Hotel] = None
+    room_price_logs: Optional[List[RoomPriceLog]] = None
+
 
 class CreateRoom(BaseModel):
-    room_id: Optional[int] = None
-    room_number: Optional[str] = None
-    room_type_id: Optional[int] = None
-    price_per_night: Optional[float] = None
-    capacity: Optional[str] = None
-    room_area: Optional[str] = None
+    room_num: str
+    room_name: str
+    capacity: int
+    area: float
+    current_price_per_night: float
     is_smoking: Optional[bool] = None
+    has_wifi: Optional[bool] = None
+    has_pool: Optional[bool] = None
     description: Optional[str] = None
+    room_type_id: Optional[int] = None
+    hotel_id: Optional[int] = None
+    is_underconstruction: Optional[bool] = None
+
 
 class UpdateRoom(BaseModel):
-    room_id: Optional[int] = None
-    room_number: Optional[str] = None
-    room_type_id: Optional[int] = None
-    price_per_night: Optional[float] = None
-    capacity: Optional[str] = None
-    room_area: Optional[str] = None
+    room_num: Optional[str] = None
+    room_name: Optional[str] = None
+    capacity: Optional[int] = None
+    area: Optional[float] = None
     is_smoking: Optional[bool] = None
+    has_wifi: Optional[bool] = None
+    has_pool: Optional[bool] = None
     description: Optional[str] = None
+    room_type_id: Optional[int] = None
+    hotel_id: Optional[int] = None
+    current_price_per_night: Optional[float] = None
+    is_deleted: Optional[bool] = None
+    is_underconstruction: Optional[bool] = None
