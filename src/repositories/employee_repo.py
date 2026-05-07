@@ -8,14 +8,16 @@ class EmployeeRepository:
     def __init__(self, db: MySQLDatabase):
         self.db = db
 
-    def create_employee(self, employee: CreateEmployee) -> Employee:
+    def create_employee(self, employee: CreateEmployee, employee_account_id: int) -> Employee:
         try:
             conn = self.db.get_connection()
             cur = conn.cursor(as_dict=True)
             cur.execute("""
-                INSERT INTO dbo.employee (name, phone, start_working_date, is_deleted)
-                OUTPUT INSERTED.id VALUES (%s, %s, %s, 0)
-            """, (employee.name, employee.phone, employee.start_working_date))
+                INSERT INTO dbo.employee
+                    (name, phone, birthday, position, start_working_date, employee_account_id, role, is_deleted)
+                OUTPUT INSERTED.id VALUES (%s, %s, %s, %s, %s, %s, %s, 0)
+            """, (employee.name, employee.phone, employee.birthday, employee.position,
+                  employee.start_working_date, employee_account_id, employee.role))
             new_id = cur.fetchone()["id"]
             conn.commit()
             return self.get_employee(new_id)
@@ -56,9 +58,26 @@ class EmployeeRepository:
         try:
             conn = self.db.get_connection()
             cur = conn.cursor(as_dict=True)
-            cur.execute("UPDATE dbo.employee SET is_deleted=1 WHERE id=%s", (id,))
+            cur.execute("DELETE FROM dbo.employee WHERE id=%s", (id,))
             conn.commit()
             return True
+        except Exception as e:
+            return JSONResponse({"error": str(e)}, status_code=500)
+        finally:
+            conn.close()
+
+    def get_employee_by_account_id(self, account_id: int):
+        try:
+            conn = self.db.get_connection()
+            cur = conn.cursor(as_dict=True)
+            cur.execute(
+                "SELECT * FROM dbo.employee WHERE employee_account_id=%s AND is_deleted=0",
+                (account_id,)
+            )
+            row = cur.fetchone()
+            if not row:
+                return None
+            return Employee(**row)
         except Exception as e:
             return JSONResponse({"error": str(e)}, status_code=500)
         finally:

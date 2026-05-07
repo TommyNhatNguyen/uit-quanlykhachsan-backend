@@ -1,14 +1,15 @@
 from fastapi import APIRouter
 from src.db.db import db
-from src.models.employee import CreateEmployee, UpdateEmployee
+from src.models.employee import CreateEmployee, UpdateEmployee, LoginEmployee
 from src.repositories.employee_repo import EmployeeRepository
+from src.repositories.employee_account_repo import EmployeeAccountRepository
 from src.services.employee_service import EmployeeService
 
 router = APIRouter(prefix="/api/employees", tags=["employees"])
 
 
 def _svc() -> EmployeeService:
-    return EmployeeService(EmployeeRepository(db))
+    return EmployeeService(EmployeeRepository(db), EmployeeAccountRepository(db))
 
 
 @router.get("")
@@ -34,3 +35,7 @@ def update_employee(id: int, employee: UpdateEmployee):
 @router.delete("/{id}")
 def delete_employee(id: int):
     return _svc().delete_employee(id)
+
+@router.post("/login")
+def login_employee(data: LoginEmployee):
+    return _svc().login(data)

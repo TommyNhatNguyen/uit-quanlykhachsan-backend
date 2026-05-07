@@ -61,6 +61,23 @@ class EmployeeAccountRepository:
         finally:
             conn.close()
 
+    def get_by_credentials(self, username: str, password: str):
+        try:
+            conn = self.db.get_connection()
+            cur = conn.cursor(as_dict=True)
+            cur.execute(
+                "SELECT * FROM dbo.employee_account WHERE username=%s AND password=%s",
+                (username, password)
+            )
+            row = cur.fetchone()
+            if not row:
+                return None
+            return EmployeeAccount(**row)
+        except Exception as e:
+            return JSONResponse({"error": str(e)}, status_code=500)
+        finally:
+            conn.close()
+
     def get_list_employee_accounts(self, page: int = 1, page_size: int = 10) -> dict:
         try:
             conn = self.db.get_connection()

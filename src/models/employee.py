@@ -25,9 +25,14 @@ class PopulatedEmployee(Employee):
     employee_account: Optional[EmployeeAccount] = None
 
 class CreateEmployee(BaseModel):
+    username: str
+    password: str
     name: str
     phone: int
     start_working_date: datetime
+    birthday: Optional[datetime] = None
+    position: Optional[str] = None
+    role: Role = Role.staff
 
 class UpdateEmployee(BaseModel):
     name: Optional[str] = None
@@ -39,3 +44,7 @@ class UpdateEmployee(BaseModel):
     employee_account_id: Optional[int] = None
     is_deleted: Optional[bool] = None
     role: Optional[Role] = None
+
+class LoginEmployee(BaseModel):
+    username: str
+    password: str
