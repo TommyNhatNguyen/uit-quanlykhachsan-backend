@@ -1,6 +1,7 @@
-from fastapi import APIRouter
+from typing import Annotated
+from fastapi import APIRouter, Depends
 from src.db.db import db
-from src.models.payment import CreatePayment, UpdatePayment
+from src.models.payment import CreatePayment, UpdatePayment, QueryPaymentsParams
 from src.repositories.payment_repo import PaymentRepository
 from src.services.payment_service import PaymentService
 
@@ -12,8 +13,8 @@ def _svc() -> PaymentService:
 
 
 @router.get("")
-def get_list_payments(page: int = 1, page_size: int = 10):
-    return _svc().get_list_payments(page, page_size)
+def get_list_payments(params: Annotated[QueryPaymentsParams, Depends()]):
+    return _svc().get_list_payments(params)
 
 
 @router.get("/{id}")

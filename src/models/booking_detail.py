@@ -55,6 +55,7 @@ class CreateBookingDetail(BaseModel):
 
 
 class UpdateBookingDetail(BaseModel):
+    id: Optional[int] = None
     booking_id: Optional[int] = None
     room_id: Optional[int] = None
     checkin_date: Optional[datetime] = None

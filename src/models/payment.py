@@ -39,3 +39,10 @@ class UpdatePayment(BaseModel):
     booking_detail_id: Optional[int] = None
     created_at: Optional[datetime] = None
     is_deleted: Optional[bool] = None
+
+
+class QueryPaymentsParams(BaseModel):
+    page: int = 1
+    page_size: int = 10
+    booking_detail_id: Optional[int] = None
+    cashier_id: Optional[int] = None

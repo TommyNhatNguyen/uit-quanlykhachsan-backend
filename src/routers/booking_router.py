@@ -1,19 +1,21 @@
-from fastapi import APIRouter
+from typing import Annotated
+from fastapi import APIRouter, Depends
 from src.db.db import db
-from src.models.booking import CreateBooking, UpdateBooking
+from src.models.booking import CreateBooking, CreateBookingWithManyDetails, UpdateBooking, UpdateBookingWithManyDetails, QueryBookingsParams
 from src.repositories.booking_repo import BookingRepository
+from src.repositories.booking_detail_repo import BookingDetailRepository
 from src.services.booking_service import BookingService
 
 router = APIRouter(prefix="/api/bookings", tags=["bookings"])
 
 
 def _svc() -> BookingService:
-    return BookingService(BookingRepository(db))
+    return BookingService(BookingRepository(db), BookingDetailRepository(db))
 
 
 @router.get("")
-def get_list_bookings(page: int = 1, page_size: int = 10):
-    return _svc().get_list_bookings(page, page_size)
+def get_list_bookings(params: Annotated[QueryBookingsParams, Depends()]):
+    return _svc().get_list_bookings(params)
 
 
 @router.get("/{id}")
@@ -26,9 +28,19 @@ def create_booking(booking: CreateBooking):
     return _svc().create_booking(booking)
 
 
+@router.post("/with-details")
+def create_booking_with_details(data: CreateBookingWithManyDetails):
+    return _svc().create_booking_with_details(data)
+
+
 @router.put("/{id}")
 def update_booking(id: int, booking: UpdateBooking):
     return _svc().update_booking(id, booking)
+
+
+@router.put("/with-details/{id}")
+def update_booking_with_details(id: int, data: UpdateBookingWithManyDetails):
+    return _svc().update_booking_with_details(id, data)
 
 
 @router.delete("/{id}")
