@@ -62,6 +62,10 @@ class UpdateRoom(BaseModel):
     is_deleted: Optional[bool] = None
     is_underconstruction: Optional[bool] = None
 
+class UpdateRoomPrice(BaseModel):
+    room_id: int
+    price_per_night: float
+
 class QueryRoomsParams(BaseModel):
     page: int = 1
     page_size: int = 10

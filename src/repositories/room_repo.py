@@ -1,7 +1,9 @@
+from ast import List
 import math
 from fastapi.responses import JSONResponse
 from src.db.db import MySQLDatabase
 from src.models.room import QueryRoomsParams, Room, PopulatedRoom, CreateRoom, UpdateRoom
+from src.models.room_price_log import RoomPriceLog
 from src.models.room_type import RoomType
 
 
@@ -14,13 +16,45 @@ class RoomRepository:
             conn = self.db.get_connection()
             cur = conn.cursor(as_dict=True)
             cur.execute("""
-                INSERT INTO dbo.room (room_num, room_name, capacity, area, is_smoking, has_wifi, has_pool,
-                    description, room_type_id, hotel_id, current_price_per_night, is_deleted, is_underconstruction)
-                OUTPUT INSERTED.id
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 0, %s)
-            """, (room.room_num, room.room_name, room.capacity, room.area, room.is_smoking,
-                  room.has_wifi, room.has_pool, room.description, room.room_type_id, room.hotel_id,
-                  room.current_price_per_night, room.is_underconstruction))
+                DECLARE @Inserted TABLE (id INT);
+
+                INSERT INTO dbo.room (
+                    room_num,
+                    room_name,
+                    capacity,
+                    area,
+                    is_smoking,
+                    has_wifi,
+                    has_pool,
+                    description,
+                    room_type_id,
+                    hotel_id,
+                    current_price_per_night,
+                    is_deleted,
+                    is_underconstruction
+                )
+                OUTPUT INSERTED.id INTO @Inserted
+                VALUES (
+                    %s, %s, %s, %s, %s,
+                    %s, %s, %s, %s, %s,
+                    %s, 0, %s
+                );
+
+                SELECT id FROM @Inserted;
+            """, (
+                room.room_num,
+                room.room_name,
+                room.capacity,
+                room.area,
+                room.is_smoking,
+                room.has_wifi,
+                room.has_pool,
+                room.description,
+                room.room_type_id,
+                room.hotel_id,
+                room.current_price_per_night,
+                room.is_underconstruction
+            ))
             new_id = cur.fetchone()["id"]
             conn.commit()
             return self.get_room(new_id)
@@ -111,6 +145,27 @@ class RoomRepository:
             return {"page": params.page, "page_size": params.page_size, "total": total,
                     "total_pages": math.ceil(total / params.page_size) if total else 0,
                     "data": data}
+        except Exception as e:
+            return JSONResponse({"error": str(e)}, status_code=500)
+        finally:
+            conn.close()
+
+    def get_room_history_prices(self, id: int):
+        try:
+            conn = self.db.get_connection()
+            cur = conn.cursor(as_dict=True)
+            
+            cur.execute("""
+                EXEC getListPriceByRoomId @p_room_id = %s;
+            """, (id))
+          
+            rows = cur.fetchall()
+
+            data = []
+            for row in rows:
+                data.append(RoomPriceLog(**row))
+
+            return data
         except Exception as e:
             return JSONResponse({"error": str(e)}, status_code=500)
         finally:

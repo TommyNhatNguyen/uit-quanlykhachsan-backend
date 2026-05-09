@@ -89,7 +89,7 @@ class RoomPriceLogRepository:
                 FROM dbo.room_price_log rpl
                 LEFT JOIN dbo.room r ON rpl.room_id = r.id
                 {where}
-                ORDER BY r.id ASC, rpl.created_at DESC OFFSET %s ROWS FETCH NEXT %s ROWS ONLY
+                ORDER BY rpl.created_at DESC OFFSET %s ROWS FETCH NEXT %s ROWS ONLY
             """, filter_args + [(params.page - 1) * params.page_size, params.page_size])
             rows = cur.fetchall()
 
