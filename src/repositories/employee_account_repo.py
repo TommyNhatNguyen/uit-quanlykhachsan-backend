@@ -9,20 +9,49 @@ class EmployeeAccountRepository:
         self.db = db
 
     def create_employee_account(self, account: CreateEmployeeAccount) -> EmployeeAccount:
+        conn = None
+
         try:
             conn = self.db.get_connection()
             cur = conn.cursor(as_dict=True)
+
             cur.execute("""
-                INSERT INTO dbo.employee_account (username, password, created_at)
-                OUTPUT INSERTED.id VALUES (%s, %s, %s)
-            """, (account.username, account.password, account.created_at))
+                DECLARE @Inserted TABLE (
+                    id INT
+                );
+
+                INSERT INTO dbo.employee_account (
+                    username,
+                    password,
+                    created_at
+                )
+                OUTPUT INSERTED.id INTO @Inserted
+                VALUES (
+                    %s, %s, %s
+                );
+
+                SELECT id FROM @Inserted;
+            """, (
+                account.username,
+                account.password,
+                account.created_at
+            ))
+
             new_id = cur.fetchone()["id"]
+
             conn.commit()
+
             return self.get_employee_account(new_id)
+
         except Exception as e:
-            return JSONResponse({"error": str(e)}, status_code=500)
+            return JSONResponse(
+                {"error": str(e)},
+                status_code=500
+            )
+
         finally:
-            conn.close()
+            if conn:
+                conn.close()
 
     def get_employee_account(self, id: int) -> EmployeeAccount:
         try:

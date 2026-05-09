@@ -10,21 +10,57 @@ class CustomerRepository:
         self.db = db
 
     def create_customer(self, customer: CreateCustomer) -> Customer:
+        conn = None
+
         try:
             conn = self.db.get_connection()
             cur = conn.cursor(as_dict=True)
+
             cur.execute("""
-                INSERT INTO dbo.customer (name, phone, sex, identification_id, email, birthday, membership_type_id)
-                OUTPUT INSERTED.id VALUES (%s, %s, %s, %s, %s, %s, %s)
-            """, (customer.name, customer.phone, customer.sex, customer.identification_id,
-                  customer.email, customer.birthday, customer.membership_type_id))
+                DECLARE @Inserted TABLE (
+                    id INT
+                );
+
+                INSERT INTO dbo.customer (
+                    name,
+                    phone,
+                    sex,
+                    identification_id,
+                    email,
+                    birthday,
+                    membership_type_id
+                )
+                OUTPUT INSERTED.id INTO @Inserted
+                VALUES (
+                    %s, %s, %s, %s, %s, %s, %s
+                );
+
+                SELECT id FROM @Inserted;
+            """, (
+                customer.name,
+                customer.phone,
+                customer.sex,
+                customer.identification_id,
+                customer.email,
+                customer.birthday,
+                customer.membership_type_id
+            ))
+
             new_id = cur.fetchone()["id"]
+
             conn.commit()
+
             return self.get_customer(new_id)
+
         except Exception as e:
-            return JSONResponse({"error": str(e)}, status_code=500)
+            return JSONResponse(
+                {"error": str(e)},
+                status_code=500
+            )
+
         finally:
-            conn.close()
+            if conn:
+                conn.close()
 
     def get_customer(self, id: int) -> Customer:
         try:

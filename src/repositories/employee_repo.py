@@ -9,22 +9,58 @@ class EmployeeRepository:
         self.db = db
 
     def create_employee(self, employee: CreateEmployee, employee_account_id: int) -> Employee:
+        conn = None
+
         try:
             conn = self.db.get_connection()
             cur = conn.cursor(as_dict=True)
+
             cur.execute("""
-                INSERT INTO dbo.employee
-                    (name, phone, birthday, position, start_working_date, employee_account_id, role, is_deleted)
-                OUTPUT INSERTED.id VALUES (%s, %s, %s, %s, %s, %s, %s, 0)
-            """, (employee.name, employee.phone, employee.birthday, employee.position,
-                  employee.start_working_date, employee_account_id, employee.role))
+                DECLARE @Inserted TABLE (
+                    id INT
+                );
+
+                INSERT INTO dbo.employee (
+                    name,
+                    phone,
+                    birthday,
+                    position,
+                    start_working_date,
+                    employee_account_id,
+                    role,
+                    is_deleted
+                )
+                OUTPUT INSERTED.id INTO @Inserted
+                VALUES (
+                    %s, %s, %s, %s, %s, %s, %s, 0
+                );
+
+                SELECT id FROM @Inserted;
+            """, (
+                employee.name,
+                employee.phone,
+                employee.birthday,
+                employee.position,
+                employee.start_working_date,
+                employee_account_id,
+                employee.role
+            ))
+
             new_id = cur.fetchone()["id"]
+
             conn.commit()
+
             return self.get_employee(new_id)
+
         except Exception as e:
-            return JSONResponse({"error": str(e)}, status_code=500)
+            return JSONResponse(
+                {"error": str(e)},
+                status_code=500
+            )
+
         finally:
-            conn.close()
+            if conn:
+                conn.close()
 
     def get_employee(self, id: int) -> Employee:
         try:
