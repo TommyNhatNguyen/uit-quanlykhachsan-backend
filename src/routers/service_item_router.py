@@ -1,14 +1,19 @@
 from fastapi import APIRouter
 from src.db.db import db
-from src.models.service import CreateService, UpdateService
+from src.models.service import CreateService, UpdateService, UpdateServicePrice
 from src.repositories.service_item_repo import ServiceRepository
+from src.repositories.service_price_log_repo import ServicePriceLogRepository
 from src.services.service_item_service import ServiceService
+from src.services.service_price_log_service import ServicePriceLogService
 
 router = APIRouter(prefix="/api/services", tags=["services"])
 
 
 def _svc() -> ServiceService:
-    return ServiceService(ServiceRepository(db))
+    return ServiceService(
+        ServiceRepository(db),
+        price_log_service=ServicePriceLogService(ServicePriceLogRepository(db))
+    )
 
 
 @router.get("")
@@ -34,3 +39,13 @@ def update_service(id: int, service: UpdateService):
 @router.delete("/{id}")
 def delete_service(id: int):
     return _svc().delete_service(id)
+
+
+@router.post("/update-price")
+def update_service_price(payload: UpdateServicePrice):
+    return _svc().update_service_price(payload)
+
+
+@router.get("/get-history-prices/{id}")
+def get_service_history_prices(id: int):
+    return _svc().get_service_history_prices(id)

@@ -9,26 +9,67 @@ class BookingDetailRepository:
         self.db = db
 
     def create_booking_detail(self, detail: CreateBookingDetail) -> BookingDetail:
+        conn = None
+
         try:
             conn = self.db.get_connection()
             cur = conn.cursor(as_dict=True)
+
             cur.execute("""
+                DECLARE @Inserted TABLE (
+                    id INT
+                );
+
                 INSERT INTO dbo.booking_detail (
-                    booking_id, room_id, checkin_date, checkout_date, quantity_of_nights,
-                    price_per_night, total_room_amount, total_service_amount, total_amount,
-                    is_fully_paid, status)
-                OUTPUT INSERTED.id
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, 0, %s)
-            """, (detail.booking_id, detail.room_id, detail.checkin_date, detail.checkout_date,
-                  detail.quantity_of_nights, detail.price_per_night, detail.total_room_amount,
-                  detail.total_service_amount, detail.total_amount, detail.status))
+                    customer_id,
+                    booking_id,
+                    room_id,
+                    checkin_date,
+                    checkout_date,
+                    quantity_of_nights,
+                    price_per_night,
+                    total_room_amount,
+                    total_service_amount,
+                    total_amount,
+                    is_fully_paid,
+                    status
+                )
+                OUTPUT INSERTED.id INTO @Inserted
+                VALUES (
+                    %s, %s, %s, %s, %s, %s,
+                    %s, %s, %s, %s, 0, %s
+                );
+
+                SELECT id FROM @Inserted;
+            """, (
+                detail.customer_id,
+                detail.booking_id,
+                detail.room_id,
+                detail.checkin_date,
+                detail.checkout_date,
+                detail.quantity_of_nights,
+                detail.price_per_night,
+                detail.total_room_amount,
+                detail.total_service_amount,
+                detail.total_amount,
+                detail.status
+            ))
+
             new_id = cur.fetchone()["id"]
+
             conn.commit()
+
             return self.get_booking_detail(new_id)
+
         except Exception as e:
-            return JSONResponse({"error": str(e)}, status_code=500)
+            return JSONResponse(
+                {"error": str(e)},
+                status_code=500
+            )
+
         finally:
-            conn.close()
+            if conn:
+                conn.close()
 
     def get_booking_detail(self, id: int) -> BookingDetail:
         try:

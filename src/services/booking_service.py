@@ -34,6 +34,7 @@ class BookingService:
             raise HTTPException(status_code=500, detail="Failed to create booking")
         for detail in data.booking_details:
             result = self.detail_repo.create_booking_detail(CreateBookingDetail(
+                customer_id=booking.customer_id,
                 booking_id=booking.id,
                 room_id=detail.room_id,
                 checkin_date=detail.checkin_date,

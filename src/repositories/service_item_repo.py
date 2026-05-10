@@ -9,20 +9,49 @@ class ServiceRepository:
         self.db = db
 
     def create_service(self, service: CreateService) -> Service:
+        conn = None
+
         try:
             conn = self.db.get_connection()
             cur = conn.cursor(as_dict=True)
+
             cur.execute("""
-                INSERT INTO dbo.service (name, catalog, current_price)
-                OUTPUT INSERTED.id VALUES (%s, %s, %s)
-            """, (service.name, service.catalog, service.current_price))
+                DECLARE @Inserted TABLE (
+                    id INT
+                );
+
+                INSERT INTO dbo.service (
+                    name,
+                    catalog,
+                    current_price
+                )
+                OUTPUT INSERTED.id INTO @Inserted
+                VALUES (
+                    %s, %s, %s
+                );
+
+                SELECT id FROM @Inserted;
+            """, (
+                service.name,
+                service.catalog,
+                service.current_price
+            ))
+
             new_id = cur.fetchone()["id"]
+
             conn.commit()
+
             return self.get_service(new_id)
+
         except Exception as e:
-            return JSONResponse({"error": str(e)}, status_code=500)
+            return JSONResponse(
+                {"error": str(e)},
+                status_code=500
+            )
+
         finally:
-            conn.close()
+            if conn:
+                conn.close()
 
     def get_service(self, id: int) -> Service:
         try:
@@ -56,6 +85,21 @@ class ServiceRepository:
             cur.execute("DELETE FROM dbo.service WHERE id=%s", (id,))
             conn.commit()
             return True
+        except Exception as e:
+            return JSONResponse({"error": str(e)}, status_code=500)
+        finally:
+            conn.close()
+
+    def get_service_history_prices(self, service_id: int) -> list:
+        try:
+            conn = self.db.get_connection()
+            cur = conn.cursor(as_dict=True)
+            cur.execute(
+                "SELECT * FROM dbo.service_price_log WHERE service_id = %s ORDER BY created_at DESC",
+                (service_id,)
+            )
+            from src.models.service_price_log import ServicePriceLog
+            return [ServicePriceLog(**r) for r in cur.fetchall()]
         except Exception as e:
             return JSONResponse({"error": str(e)}, status_code=500)
         finally:

@@ -13,7 +13,7 @@ class ServicesDetailRepository:
             conn = self.db.get_connection()
             cur = conn.cursor(as_dict=True)
             cur.execute("""
-                INSERT INTO dbo.service_detail (booking_detail_id, service_id, quanity, price, total_amount)
+                INSERT INTO dbo.services_detail (booking_detail_id, service_id, quanity, price, total_amount)
                 OUTPUT INSERTED.id VALUES (%s, %s, %s, %s, %s)
             """, (detail.booking_detail_id, detail.service_id, detail.quanity, detail.price, detail.total_amount))
             new_id = cur.fetchone()["id"]
@@ -28,7 +28,7 @@ class ServicesDetailRepository:
         try:
             conn = self.db.get_connection()
             cur = conn.cursor(as_dict=True)
-            cur.execute("SELECT * FROM dbo.service_detail WHERE id = %s", (id,))
+            cur.execute("SELECT * FROM dbo.services_detail WHERE id = %s", (id,))
             return ServicesDetail(**cur.fetchone())
         except Exception as e:
             return JSONResponse({"error": str(e)}, status_code=500)
@@ -40,7 +40,7 @@ class ServicesDetailRepository:
             conn = self.db.get_connection()
             cur = conn.cursor(as_dict=True)
             cur.execute("""
-                UPDATE dbo.service_detail SET booking_detail_id=%s, service_id=%s,
+                UPDATE dbo.services_detail SET booking_detail_id=%s, service_id=%s,
                     quanity=%s, price=%s, total_amount=%s WHERE id=%s
             """, (detail.booking_detail_id, detail.service_id, detail.quanity,
                   detail.price, detail.total_amount, id))
@@ -55,7 +55,7 @@ class ServicesDetailRepository:
         try:
             conn = self.db.get_connection()
             cur = conn.cursor(as_dict=True)
-            cur.execute("DELETE FROM dbo.service_detail WHERE id=%s", (id,))
+            cur.execute("DELETE FROM dbo.services_detail WHERE id=%s", (id,))
             conn.commit()
             return True
         except Exception as e:
@@ -68,7 +68,7 @@ class ServicesDetailRepository:
             conn = self.db.get_connection()
             cur = conn.cursor(as_dict=True)
             cur.execute("""
-                SELECT * FROM dbo.service_detail
+                SELECT * FROM dbo.services_detail
                 ORDER BY id OFFSET %s ROWS FETCH NEXT %s ROWS ONLY
             """, ((page - 1) * page_size, page_size))
             rows = cur.fetchall()

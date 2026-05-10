@@ -26,3 +26,9 @@ class UpdateServicePriceLog(BaseModel):
     service_id: Optional[int] = None
     created_at: Optional[datetime] = None
     price: Optional[float] = None
+
+
+class QueryServicePriceLogsParams(BaseModel):
+    page: int = 1
+    page_size: int = 10
+    service_id: Optional[int] = None

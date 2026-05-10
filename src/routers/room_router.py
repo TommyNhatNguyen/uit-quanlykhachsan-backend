@@ -43,5 +43,5 @@ def update_room_price(payload: UpdateRoomPrice):
     return _svc().update_room_price(payload)
 
 @router.get("/get-history_prices/{id}")
-def update_room_price(id: int):
+def get_room_history_prices(id: int):
     return _svc().get_room_history_prices(id)

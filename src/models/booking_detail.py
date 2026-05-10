@@ -42,6 +42,7 @@ class PopulatedBookingDetail(BookingDetail):
 
 
 class CreateBookingDetail(BaseModel):
+    customer_id: int
     booking_id: int
     room_id: int
     checkin_date: datetime

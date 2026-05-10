@@ -1,6 +1,7 @@
-from fastapi import APIRouter
+from typing import Annotated
+from fastapi import APIRouter, Depends
 from src.db.db import db
-from src.models.service_price_log import CreateServicePriceLog, UpdateServicePriceLog
+from src.models.service_price_log import CreateServicePriceLog, UpdateServicePriceLog, QueryServicePriceLogsParams
 from src.repositories.service_price_log_repo import ServicePriceLogRepository
 from src.services.service_price_log_service import ServicePriceLogService
 
@@ -12,8 +13,8 @@ def _svc() -> ServicePriceLogService:
 
 
 @router.get("")
-def get_list_service_price_logs(page: int = 1, page_size: int = 10):
-    return _svc().get_list_service_price_logs(page, page_size)
+def get_list_service_price_logs(params: Annotated[QueryServicePriceLogsParams, Depends()]):
+    return _svc().get_list_service_price_logs(params)
 
 
 @router.get("/{id}")

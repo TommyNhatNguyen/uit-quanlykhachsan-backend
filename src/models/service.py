@@ -27,3 +27,8 @@ class UpdateService(BaseModel):
     name: Optional[str] = None
     catalog: Optional[str] = None
     current_price: Optional[float] = None
+
+
+class UpdateServicePrice(BaseModel):
+    service_id: int
+    price: float
