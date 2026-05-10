@@ -105,6 +105,9 @@ class BookingRepository:
             if params.customer_id:
                 where += " AND b.customer_id = %s"
                 filter_args.append(params.customer_id)
+            if params.is_fully_paid is not None:
+                where += " AND b.is_fully_paid = %s"
+                filter_args.append(params.is_fully_paid)
 
             cur.execute(f"SELECT COUNT(*) AS total FROM dbo.booking b {where}", filter_args)
             total = cur.fetchone()["total"]

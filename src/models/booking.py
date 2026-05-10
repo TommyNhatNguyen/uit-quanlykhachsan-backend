@@ -77,3 +77,4 @@ class QueryBookingsParams(BaseModel):
     page: int = 1
     page_size: int = 10
     customer_id: Optional[int] = None
+    is_fully_paid: Optional[bool] = None
