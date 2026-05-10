@@ -9,20 +9,53 @@ class ServicesDetailRepository:
         self.db = db
 
     def create_services_detail(self, detail: CreateServicesDetail) -> ServicesDetail:
+        conn = None
+
         try:
             conn = self.db.get_connection()
             cur = conn.cursor(as_dict=True)
+
             cur.execute("""
-                INSERT INTO dbo.services_detail (booking_detail_id, service_id, quanity, price, total_amount)
-                OUTPUT INSERTED.id VALUES (%s, %s, %s, %s, %s)
-            """, (detail.booking_detail_id, detail.service_id, detail.quanity, detail.price, detail.total_amount))
+                DECLARE @Inserted TABLE (
+                    id INT
+                );
+
+                INSERT INTO dbo.services_detail (
+                    booking_detail_id,
+                    service_id,
+                    quanity,
+                    price,
+                    total_amount
+                )
+                OUTPUT INSERTED.id INTO @Inserted
+                VALUES (
+                    %s, %s, %s, %s, %s
+                );
+
+                SELECT id FROM @Inserted;
+            """, (
+                detail.booking_detail_id,
+                detail.service_id,
+                detail.quanity,
+                detail.price,
+                detail.total_amount
+            ))
+
             new_id = cur.fetchone()["id"]
+
             conn.commit()
+
             return self.get_services_detail(new_id)
+
         except Exception as e:
-            return JSONResponse({"error": str(e)}, status_code=500)
+            return JSONResponse(
+                {"error": str(e)},
+                status_code=500
+            )
+
         finally:
-            conn.close()
+            if conn:
+                conn.close()
 
     def get_services_detail(self, id: int) -> ServicesDetail:
         try:

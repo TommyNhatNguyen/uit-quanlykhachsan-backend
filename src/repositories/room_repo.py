@@ -2,7 +2,7 @@ from ast import List
 import math
 from fastapi.responses import JSONResponse
 from src.db.db import MySQLDatabase
-from src.models.room import QueryRoomsParams, Room, PopulatedRoom, CreateRoom, UpdateRoom
+from src.models.room import QueryRoomsParams, AvailableRoomsParams, Room, PopulatedRoom, CreateRoom, UpdateRoom
 from src.models.room_price_log import RoomPriceLog
 from src.models.room_type import RoomType
 
@@ -145,6 +145,19 @@ class RoomRepository:
             return {"page": params.page, "page_size": params.page_size, "total": total,
                     "total_pages": math.ceil(total / params.page_size) if total else 0,
                     "data": data}
+        except Exception as e:
+            return JSONResponse({"error": str(e)}, status_code=500)
+        finally:
+            conn.close()
+
+    def get_available_rooms(self, params: AvailableRoomsParams) -> list:
+        try:
+            conn = self.db.get_connection()
+            cur = conn.cursor(as_dict=True)
+            cur.execute("""
+                EXEC getAvailableRooms @p_checkin_date = %s, @p_checkout_date = %s;
+            """, (params.checkin_date, params.checkout_date))
+            return [Room(**r) for r in cur.fetchall()]
         except Exception as e:
             return JSONResponse({"error": str(e)}, status_code=500)
         finally:

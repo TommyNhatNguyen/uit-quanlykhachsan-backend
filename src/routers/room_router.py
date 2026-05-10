@@ -1,7 +1,7 @@
 from typing import Annotated
 from fastapi import APIRouter, Depends
 from src.db.db import db
-from src.models.room import CreateRoom, QueryRoomsParams, UpdateRoom, UpdateRoomPrice
+from src.models.room import AvailableRoomsParams, CreateRoom, QueryRoomsParams, UpdateRoom, UpdateRoomPrice
 from src.repositories.room_log_price_repo import RoomPriceLogRepository
 from src.repositories.room_repo import RoomRepository
 from src.services.room_log_price_service import RoomPriceLogService
@@ -17,6 +17,11 @@ def _svc() -> RoomService:
 @router.get("")
 def get_list_rooms(params: Annotated[QueryRoomsParams, Depends()]):
     return _svc().get_list_rooms(params)
+
+
+@router.get("/available")
+def get_available_rooms(params: Annotated[AvailableRoomsParams, Depends()]):
+    return _svc().get_available_rooms(params)
 
 
 @router.get("/{id}")

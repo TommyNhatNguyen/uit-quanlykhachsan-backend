@@ -27,6 +27,9 @@ class BookingDetailService:
         merged = {**current.model_dump(), **data.model_dump(exclude_none=True)}
         return self.repo.update_booking_detail(id, BookingDetail(**merged))
 
+    def get_total_payments_by_booking_id(self, booking_id: int):
+        return self.repo.get_total_payments_by_booking_id(booking_id)
+
     def delete_booking_detail(self, id: int) -> BookingDetail:
         current = self.repo.get_booking_detail(id)
         if isinstance(current, JSONResponse):

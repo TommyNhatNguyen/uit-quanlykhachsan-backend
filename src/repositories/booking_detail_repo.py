@@ -1,7 +1,7 @@
 import math
 from fastapi.responses import JSONResponse
 from src.db.db import MySQLDatabase
-from src.models.booking_detail import BookingDetail, BookingStatus, CreateBookingDetail, UpdateBookingDetail
+from src.models.booking_detail import BookingDetail, BookingDetailWithPaymentSummary, BookingStatus, CreateBookingDetail, UpdateBookingDetail
 
 
 class BookingDetailRepository:
@@ -109,6 +109,19 @@ class BookingDetailRepository:
             cur.execute("DELETE FROM dbo.booking_detail WHERE id=%s", (id,))
             conn.commit()
             return True
+        except Exception as e:
+            return JSONResponse({"error": str(e)}, status_code=500)
+        finally:
+            conn.close()
+
+    def get_total_payments_by_booking_id(self, booking_id: int) -> list:
+        try:
+            conn = self.db.get_connection()
+            cur = conn.cursor(as_dict=True)
+            cur.execute("""
+                EXEC getTotalPaymentsOfBookingDetailsByBookingId @p_booking_id = %s;
+            """, (booking_id,))
+            return [BookingDetailWithPaymentSummary(**r) for r in cur.fetchall()]
         except Exception as e:
             return JSONResponse({"error": str(e)}, status_code=500)
         finally:

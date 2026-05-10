@@ -55,6 +55,10 @@ class CreateBookingDetail(BaseModel):
     status: BookingStatus = BookingStatus.BOOKED
 
 
+class BookingDetailWithPaymentSummary(BookingDetail):
+    total_payment: float = 0
+
+
 class UpdateBookingDetail(BaseModel):
     id: Optional[int] = None
     booking_id: Optional[int] = None

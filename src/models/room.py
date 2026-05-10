@@ -1,5 +1,6 @@
 from __future__ import annotations
 from typing import Optional, List, TYPE_CHECKING, Tuple
+from datetime import datetime
 from pydantic import BaseModel
 
 from src.models.hotel import Hotel
@@ -72,3 +73,8 @@ class QueryRoomsParams(BaseModel):
     room_type_id: Optional[int] = None
     price_from: Optional[float] = None
     price_to: Optional[float] = None
+
+
+class AvailableRoomsParams(BaseModel):
+    checkin_date: datetime
+    checkout_date: datetime

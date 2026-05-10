@@ -16,6 +16,11 @@ def get_list_booking_details(page: int = 1, page_size: int = 10):
     return _svc().get_list_booking_details(page, page_size)
 
 
+@router.get("/total-payments/{booking_id}")
+def get_total_payments_by_booking_id(booking_id: int):
+    return _svc().get_total_payments_by_booking_id(booking_id)
+
+
 @router.get("/{id}")
 def get_booking_detail(id: int):
     return _svc().get_booking_detail(id)
