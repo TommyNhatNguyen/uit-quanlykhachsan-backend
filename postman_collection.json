@@ -785,6 +785,61 @@
           "request": { "method": "DELETE", "url": "{{baseUrl}}/api/customer-history-purchases/1" }
         }
       ]
+    },
+    {
+      "name": "Stats (Dashboard)",
+      "item": [
+        {
+          "name": "KPI Today",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/stats/kpi-today",
+            "description": "Reads dbo.vw_dashboard_kpi_today — bookings, revenue, customers, occupancy for today."
+          }
+        },
+        {
+          "name": "Recent Bookings",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/stats/recent-bookings?limit=50",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "stats", "recent-bookings"],
+              "query": [{ "key": "limit", "value": "50", "description": "1–200, default 50" }]
+            },
+            "description": "Reads dbo.vw_dashboard_recent_bookings (newest first)."
+          }
+        },
+        {
+          "name": "Revenue 7 Days",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/stats/revenue-7days",
+            "description": "Reads dbo.vw_dashboard_revenue_7days — daily aggregates for last 7 days."
+          }
+        },
+        {
+          "name": "Room Type Distribution",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/stats/room-type-distribution",
+            "description": "Reads dbo.vw_dashboard_room_type_distribution — counts and occupancy by room type."
+          }
+        },
+        {
+          "name": "Top Customers",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/stats/top-customers?limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "stats", "top-customers"],
+              "query": [{ "key": "limit", "value": "20", "description": "1–200, default 20" }]
+            },
+            "description": "Reads dbo.vw_dashboard_top_customers — ordered by total_paid, total_bookings."
+          }
+        }
+      ]
     }
   ]
 }

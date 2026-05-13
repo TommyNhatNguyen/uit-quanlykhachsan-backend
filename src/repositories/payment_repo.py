@@ -61,22 +61,54 @@ class PaymentRepository:
         self.db = db
 
     def create_payment(self, payment: CreatePayment) -> PopulatedPayment:
+        conn = None
+
         try:
             conn = self.db.get_connection()
             cur = conn.cursor(as_dict=True)
+
             cur.execute("""
-                INSERT INTO dbo.payment
-                    (cashier_id, total_payment, payment_method, booking_detail_id, created_at, is_deleted)
-                OUTPUT INSERTED.id VALUES (%s, %s, %s, %s, %s, 0)
-            """, (payment.cashier_id, payment.total_payment, payment.payment_method,
-                  payment.booking_detail_id, payment.created_at))
+                DECLARE @Inserted TABLE (
+                    id INT
+                );
+
+                INSERT INTO dbo.payment (
+                    cashier_id,
+                    total_payment,
+                    payment_method,
+                    booking_detail_id,
+                    created_at,
+                    is_deleted
+                )
+                OUTPUT INSERTED.id INTO @Inserted
+                VALUES (
+                    %s, %s, %s, %s, %s, 0
+                );
+
+                SELECT id FROM @Inserted;
+            """, (
+                payment.cashier_id,
+                payment.total_payment,
+                payment.payment_method,
+                payment.booking_detail_id,
+                payment.created_at
+            ))
+
             new_id = cur.fetchone()["id"]
+
             conn.commit()
+
             return self.get_payment(new_id)
+
         except Exception as e:
-            return JSONResponse({"error": str(e)}, status_code=500)
+            return JSONResponse(
+                {"error": str(e)},
+                status_code=500
+            )
+
         finally:
-            conn.close()
+            if conn:
+                conn.close()
 
     def get_payment(self, id: int) -> PopulatedPayment:
         try:

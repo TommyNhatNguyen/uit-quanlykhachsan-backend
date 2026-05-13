@@ -25,6 +25,7 @@ from src.routers import (
     service_detail_router,
     service_item_router,
     service_price_log_router,
+    stats_router,
 )
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -62,6 +63,7 @@ app.include_router(booking_router.router)
 app.include_router(booking_detail_router.router)
 app.include_router(customer_history_purchase_router.router)
 app.include_router(payment_router.router)
+app.include_router(stats_router.router)
 app.include_router(service_detail_router.router)
 app.include_router(service_item_router.router)
 app.include_router(service_price_log_router.router)
